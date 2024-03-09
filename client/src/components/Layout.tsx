@@ -17,7 +17,7 @@ const Layout = () => {
     else if (presentPath.pathname.includes("student"))
         return <Student />;
     else
-        return <div>Student</div>;
+        return <Teacher/>;
 };
 
 export default Layout;
