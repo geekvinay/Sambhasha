@@ -8,9 +8,17 @@ import { MongoDBConfigService } from './bootstrap/mongo.config.service';
 import { SocketGateway } from './common/socket.gateway';
 import { SessionsModule } from './modules/schedule/schedule.module';
 import * as cors from 'cors';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        customProps: (req, res) => ({
+          context: 'HTTP',
+        }),
+      },
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useClass: MongoDBConfigService,
