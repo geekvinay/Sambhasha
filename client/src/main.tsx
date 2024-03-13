@@ -6,15 +6,15 @@ import './styles/index.css';
 
 const router = createBrowserRouter([
   {
-    path: "/room/teacher",
+    path: "/teacher",
     element: <Layout />
   },
   {
-    path: "/room/student",
+    path: "/student",
     element: <Layout />
   },
   {
-    path: "*",
+    path: "/",
     element: <Layout />
   }
 ]);

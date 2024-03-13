@@ -24,7 +24,7 @@ const Welcome = () => {
     const handleFormSubmit = (e: any) => {
         e.preventDefault();
         console.log('Submitted!');
-        navigate(`/room/${userRole}`);
+        navigate(`/${userRole}`);
     };
     return (
         <section className="bg-gray-300 w-screen h-screen flex items-center justify-center">

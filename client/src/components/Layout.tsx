@@ -27,12 +27,10 @@ const Layout = () => {
     //     return <Student />;
     // else
     //     return <Welcome/>;
-    if (presentPath.pathname.includes("room")) {
-        if (presentPath.pathname.includes("teacher")) {
-            return <Teacher />;
-        } else if (presentPath.pathname.includes("student")) {
-            return <Student />;
-        }
+    if (presentPath.pathname.includes("teacher")) {
+        return <Teacher />;
+    } else if (presentPath.pathname.includes("student")) {
+        return <Student />;
     }
     else {
         return <Welcome />;
