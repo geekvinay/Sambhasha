@@ -35,9 +35,9 @@ const Layout = () => {
     //     return <Welcome/>;
     if (presentPath.pathname.includes("room")) {
         if (presentPath.pathname.includes("teacher")) {
-            return <Teacher pathVariables={pathVariables}/>;
+            return <Teacher/>;
         } else if (presentPath.pathname.includes("student")) {
-            return <Student pathVariables={pathVariables}/>;
+            return <Student/>;
         }
     }
     else {

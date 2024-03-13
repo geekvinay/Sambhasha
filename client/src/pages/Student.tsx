@@ -4,12 +4,7 @@ import StudentBoard from "../components/StudentBoard";
 import StudentPanel from "../components/StudentPanel";
 import { useLocation } from "react-router-dom";
 
-const Student = ({ pathVariables }: {
-    pathVariables: {
-        roomid: string,
-        rollNumber: string;
-    };
-}) => {
+const Student = () => {
     // const socketService = new SocketSerivce("");
     const socketService = new SocketSerivce("room1244");
     const location = useLocation();
