@@ -27,6 +27,11 @@ export class SessionController {
     return this.sessionService.getSchedule(params);
   }
 
+  @Get("/:scheduleId/agora-token")
+  getAgoraTokenForSchedule(@Param() params: string): any{
+    return this.sessionService.getAgoraToken(params);
+  }
+
   @Post("/")
   createSchedule(
     // @CustomHeaders() headers: HeaderUserOrganizationDto,

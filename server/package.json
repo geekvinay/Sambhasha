@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^10.3.3",
     "@nestjs/platform-socket.io": "^10.3.3",
     "@nestjs/websockets": "^10.3.3",
+    "agora-access-token": "^2.0.4",
     "cors": "^2.8.5",
     "mongoose": "^8.1.1",
     "nestjs-pino": "^4.0.0",

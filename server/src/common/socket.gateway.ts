@@ -49,4 +49,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('payload: ', payload);
     this.server.to(payload.room).emit('receive_whiteboard_path', payload.pathObj);
   }
+
+  @SubscribeMessage('sendInbox')
+  handleInboxMess(client: Socket, payload: { room: string; mess: any; }) {
+    console.log('payload: ', payload);
+    client.to(payload.room).emit('receive_inbox_mess', payload.mess);
+  }
 }
