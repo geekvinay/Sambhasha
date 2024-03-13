@@ -1,0 +1,42 @@
+# Ignore compiled files
+*.o
+*.out
+*.exe
+
+# Ignore temporary files
+*~
+*.swp
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore dependencies
+/node_modules
+/bower_components
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.*.local
+
+# Ignore log files
+*.log
+
+# Ignore build output
+/build
+
+# Ignore IDE-specific files
+.idea/
+.vscode/
+
+# Ignore package-lock files
+package-lock.json
+yarn.lock
+
+# Ignore configuration files
+*.config.js
+
+# Ignore sensitive or personal data
+config.js
+secrets.json
