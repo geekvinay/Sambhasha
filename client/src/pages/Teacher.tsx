@@ -2,14 +2,20 @@ import SocketSerivce from "../services/socket";
 import TeacherBoard from "../components/TeacherBoard";
 import TeacherPanel from "../components/TeacherPanel";
 
-const Teacher = () => {
+const Teacher = ({ pathVariables }: {
+    pathVariables: {
+        roomid: string,
+        rollNumber: string;
+    };
+}) => {
     // const socketService = new SocketSerivce("");
-    const socketService =new SocketSerivce("room1244");
+    const socketService = new SocketSerivce("room1244");
+    console.log('pathVariables: ', pathVariables);
 
     return (
         <section className="mainPage min-h-screen w-screen bg-slate-200 p-4 m-0 grid grid-cols-7 grid-row-1 gap-x-4">
             <TeacherBoard socket={socketService} />
-            <TeacherPanel/>
+            <TeacherPanel socket={socketService}/>
         </section>
     );
 };

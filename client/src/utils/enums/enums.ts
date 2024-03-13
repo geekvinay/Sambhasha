@@ -6,3 +6,8 @@ export enum penToolTip {
     CHINESE_BRUSH = "CHINESE_BRUSH"
 
 }
+
+export enum userRoleEnum {
+    STUDENT = "student", 
+    TEACHER = "teacher"
+}
