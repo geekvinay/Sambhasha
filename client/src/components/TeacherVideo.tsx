@@ -24,7 +24,6 @@ const TeacherVideo = () => {
                 client.on('user-published', async (user, mediaType) => {
                     await client.subscribe(user, mediaType);
                 });
-
             } catch (error) {
                 console.error('Error joining channel:', error);
             }
