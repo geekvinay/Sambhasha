@@ -12,13 +12,14 @@ const Welcome = () => {
     const handleRoleChange = (e: any) => {
         setUserRole(e.target.value);
     };
-        
+    
     const handleInputChange = (e: any) => {
         const { name, value } = e.target;
         setInputs(prevInputs => ({
             ...prevInputs,
             [name]: value
         }));
+        console.log('inputs: ', inputs);
     };
     const handleFormSubmit = (e: any) => {
         e.preventDefault();
