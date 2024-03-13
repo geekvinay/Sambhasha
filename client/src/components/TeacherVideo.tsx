@@ -17,6 +17,7 @@ const TeacherVideo = () => {
             try {
                 await client.join(APP_ID, CHANNEL, TOKEN, null);
                 const [audioTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                console.log('audioTrack: ', Boolean(audioTrack));
                 await client.publish([cameraTrack]);
 
                 cameraTrack.play(videoContainer.current);

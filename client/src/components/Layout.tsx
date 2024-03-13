@@ -7,10 +7,6 @@ import Welcome from "../pages/Welcome";
 
 const Layout = () => {
     const presentPath = useLocation();
-    const [pathVariables, setPathVariables] = useState({
-        roomid: "",
-        rollNumber: ""
-    })
     const [path, setPath] = useState({});
 
     useEffect(() => {
@@ -20,10 +16,8 @@ const Layout = () => {
         const rollNumberIndex = roomidIndex + 1;
 
         if (pathArray[roomidIndex]) {
-            setPathVariables({
-                roomid: pathArray[roomidIndex],
-                rollNumber: pathArray[rollNumberIndex]
-            });
+            console.log('pathArray[roomidIndex]: ', pathArray[roomidIndex]);
+            console.log('pathArray[rollNumberIndex]: ', pathArray[rollNumberIndex]);
         }
     }, [path, presentPath]);
 
@@ -35,9 +29,9 @@ const Layout = () => {
     //     return <Welcome/>;
     if (presentPath.pathname.includes("room")) {
         if (presentPath.pathname.includes("teacher")) {
-            return <Teacher pathVariables={pathVariables}/>;
+            return <Teacher />;
         } else if (presentPath.pathname.includes("student")) {
-            return <Student pathVariables={pathVariables}/>;
+            return <Student />;
         }
     }
     else {
