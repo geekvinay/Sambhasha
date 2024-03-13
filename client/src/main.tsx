@@ -6,6 +6,14 @@ import './styles/index.css';
 
 const router = createBrowserRouter([
   {
+    path: "/room/teacher",
+    element: <Layout />
+  },
+  {
+    path: "/room/student",
+    element: <Layout />
+  },
+  {
     path: "*",
     element: <Layout />
   }
