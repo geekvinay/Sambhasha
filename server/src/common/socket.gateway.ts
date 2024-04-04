@@ -46,7 +46,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('sendWhiteboard')
   handleWhiteboardEvent(client: Socket, payload: { room: string; pathObj: any; }) {
-    console.log('payload: ', payload);
+    console.log('payload: ', JSON.stringify(payload));
     this.server.to(payload.room).emit('receive_whiteboard_path', payload.pathObj);
   }
 

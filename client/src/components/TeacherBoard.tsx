@@ -39,15 +39,15 @@ const TeacherBoard = ({ socket }: { socket: SocketSerivce; }) => {
                 top
             });
         });
-        myCanvas.on('path:created', (event: any) =>{
+        myCanvas.on('path:created', (event: any) => {
             console.log('event: ', event.path.path);
-        })
+        });
 
         return () => { };
     }, []);
     return (
         <section className='relative col-span-5 bg-white rounded-md overflow-hidden' ref={canvasPar}>
-            <TeacherVideo/>
+            <TeacherVideo />
             <canvas ref={canvasRef} className='h-full w-full' />
         </section>
     );

@@ -23,6 +23,7 @@ export default class SocketSerivce {
     }
 
     sendWhiteboardPath(pathObj: any, room: string = this.room_id) {
+        console.log('pathObj: ', pathObj);
         this.socket.emit("sendWhiteboard", { room: room, pathObj });
     }
 

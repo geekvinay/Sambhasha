@@ -2,10 +2,13 @@ import { useState } from 'react';
 import SocketSerivce from '../services/socket';
 
 const ChatPanel = ({ socket }: { socket: SocketSerivce; }) => {
-    const [messages, setMessages]: any = useState([]);
+    const [messages, setMessages]: any = useState([{
+        user: 'other',
+        text: 'Welcome to the class!!!!'
+    }]);
     const [inputValue, setInputValue]: any = useState('');
-    socket.socket.on("receive_inbox_mess", (payload) => {
-        console.log('payload: ', payload.mess);
+    socket.socket.on("receive_inbox_mess", (payload: any) => {
+        console.log('messages: ', messages);
         setMessages([...messages, { user: 'other', text: payload.mess }]);
     });
 
@@ -26,7 +29,7 @@ const ChatPanel = ({ socket }: { socket: SocketSerivce; }) => {
             <div className="flex flex-col flex-grow bg-gray-200 rounded-md justify-end overflow-y-scroll px-4 pb-4">
                 {messages.map((message: any, index: any) => (
                     <div key={index} className={`message-container flex ${message.user === 'user' ? 'sent justify-end' : 'received justify-start'}`}>
-                        <div className={`message my-2 rounded-md px-4 py-1 w-fit max-w-[80%] ${message.user === 'user' ? 'bg-blue-500 text-white  rounded-br-none' : 'bg-green-60   0 text-white rounded-bl-none'}`}>
+                        <div className={`message my-2 rounded-md px-4 py-1 w-fit max-w-[80%] ${message.user === 'user' ? 'bg-blue-500 text-white  rounded-br-none' : 'bg-green-600 text-white rounded-bl-none'}`}>
                             {message.text}
                         </div>
                     </div>
