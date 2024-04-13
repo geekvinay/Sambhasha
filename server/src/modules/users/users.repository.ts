@@ -29,7 +29,7 @@ export class UserRepository {
     async fetchOne(params: Params<User>) {
         const key = this.getKeyForUserDetails(params);
         console.log('key: ', key);
-        if (key) {
+        if (false) {
             const cacheData = await this.getUserDetailsInCache(key);
             console.log('cacheData: ', Boolean(cacheData));
             if (cacheData) return cacheData;
