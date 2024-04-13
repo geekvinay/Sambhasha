@@ -25,7 +25,7 @@ const StudentPanel = ({ socket }: { socket: SocketSerivce; }) => {
                     console.log('user, mediaType: ', user, mediaType);
                     await client.subscribe(user, mediaType);
                     if (mediaType === 'video') {
-                        user.videoTrack.play(teacherVideoRef.current);
+                        user.videoTrack ? user.videoTrack.play(teacherVideoRef.current): "";
                     }
                     user.audioTrack?.play();
                 });

@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import * as cors from 'cors';
 import { Logger } from 'nestjs-pino';
 let app;
-const PORT = 8443;
+const PORT = 8001;
 import * as fs from 'fs';
 
 async function bootstrap() {
@@ -15,7 +15,9 @@ async function bootstrap() {
   });
   app.useLogger(app.get(Logger));
   app.use(cors());
-  await app.listen(PORT, "172.16.18.91");
+  await app.listen(PORT, ()=>{
+    console.log(`Listening on port ${PORT}`);
+  });
 }
 bootstrap();
 export default app;

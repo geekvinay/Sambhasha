@@ -9,6 +9,7 @@ import { SocketGateway } from './common/socket.gateway';
 import { SessionsModule } from './modules/schedule/schedule.module';
 import * as cors from 'cors';
 import { LoggerModule } from 'nestjs-pino';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { LoggerModule } from 'nestjs-pino';
       load: [configuration],
     }),
     SessionsModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService, SocketGateway],
