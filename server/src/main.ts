@@ -21,6 +21,7 @@ async function bootstrap() {
       validateCustomDecorators: true,
     })
   );
+  app.setGlobalPrefix('backend');
   app.useLogger(app.get(Logger));
   app.use(cors());
   await app.listen(PORT, () => {
