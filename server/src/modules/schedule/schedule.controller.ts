@@ -4,12 +4,8 @@ import {
   Get,
   Param,
   Post,
-  Query,
-  Delete,
-  Put,
 } from '@nestjs/common';
 import { SessionService } from './schedule.service';
-import { CustomHeaders } from 'src/common/decorators/header.decorator';
 
 @Controller("/session")
 export class SessionController {
@@ -28,7 +24,7 @@ export class SessionController {
   }
 
   @Get("/:scheduleId/agora-token")
-  getAgoraTokenForSchedule(@Param() params: string): any{
+  getAgoraTokenForSchedule(@Param() params: string): any {
     return this.sessionService.getAgoraToken(params);
   }
 

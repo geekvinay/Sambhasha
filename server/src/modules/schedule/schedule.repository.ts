@@ -8,22 +8,17 @@ import {
     Params,
 } from 'src/common/base-repository/interfaces';
 import { Schedule } from './schedule.schema';
+import { RedisService } from 'src/common/utils/redis/redis.service';
 
 @Injectable()
 export class ScheduleRepository {
-    POLL = 'POLL_';
-    VOTE = 'VOTE_';
-    USER = 'USER_';
-    LIST = 'LIST_';
-    COUNT = 'COUNT_';
-    JOINED = 'JOINED_';
-    ENTITY_ID = 'ENTITY_ID_';
-    ATTEMPT = 'ATTEMPT_';
-    DETAILS = 'DETAILS_';
+    SCHEDULE = "SCHED_";
+    DETAILS = "DTLS_";
+    ID = "ID_";
 
     constructor(
         @Inject(Schedule.name) private scheduleRepository: BaseRepository<Schedule>,
-        // // private cacheService: CacheService,
+        private cacheService: RedisService,
     ) { }
 
     //DB FUNCTIONS
@@ -33,11 +28,21 @@ export class ScheduleRepository {
     }
 
     async fetchOne(params: Params<Schedule>) {
-        if (params.searchParams?._id) {
-            //delete project so anyone can't set projected data in cache for details
-            delete params.project;
-            const dbData = await this.scheduleRepository.fetchOne(params);
-            return dbData;
+        const key = this.getKeyForScheduleDetails(params);
+        console.log('key: ', key);
+        if (key) {
+            const cacheData = await this.getScheduleDetailsInCache(key);
+            console.log('cacheData: ', Boolean(cacheData));
+            if (cacheData) return cacheData;
+            else {
+                if (params.searchParams?._id) {
+                    delete params.project;
+                    const dbData = await this.scheduleRepository.fetchOne(params);
+                    console.log('dbData: ', dbData);
+                    this.setScheduleDetailsInCache(key, dbData);
+                    return dbData;
+                }
+            }
         }
         return await this.scheduleRepository.fetchOne(params);
     }
@@ -82,5 +87,35 @@ export class ScheduleRepository {
     ) {
         const dbData = await this.scheduleRepository.updateMany(searchParams, data);
         return dbData;
+    }
+
+    // ==============================> Redis keys <======================================== //
+    getKeyForScheduleDetails(params: Params<Schedule>) {
+        if (params) {
+            if (params.searchParams._id) {
+                return this.SCHEDULE + this.DETAILS + this.ID + params.searchParams._id;
+            }
+        }
+        return false;
+    }
+
+    // ==============================> Redis functions <=================================== //
+    async setScheduleDetailsInCache(key: string, data: Schedule) {
+        if (key.length) {
+            await this.cacheService.set(key, data); // Await the promise returned by `set`
+        }
+    }
+
+    async getScheduleDetailsInCache(key: string): Promise<Schedule | null> {
+        if (key.length) {
+            return await this.cacheService.get(key); // Await the promise returned by `get`
+        }
+        return null;
+    }
+
+    async deleteScheduleDetailsInCache(key: string) {
+        if (key.length) {
+            await this.cacheService.deleteByPattern(key); // Await the promise returned by `deleteByPattern`
+        }
     }
 }

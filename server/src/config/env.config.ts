@@ -7,7 +7,7 @@ export default () => ({
       'mongodb://localhost:27017/tutr-local-service',
   },
   redis: {
-    uri: process.env.REDIS_URI || 'redis://localhost:6379',
+    url: process.env.REDIS_URI || 'redis://localhost:6379',
     nodes: process.env.REDIS_NODES ? [process.env.REDIS_NODES] : null,
   },
   socket: {

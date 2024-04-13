@@ -8,42 +8,45 @@ import {
     Params,
 } from 'src/common/base-repository/interfaces';
 import { User } from './users.schema';
+import { RedisService } from 'src/common/utils/redis/redis.service';
 
 @Injectable()
 export class UserRepository {
-    POLL = 'POLL_';
-    VOTE = 'VOTE_';
-    USER = 'USER_';
-    LIST = 'LIST_';
-    COUNT = 'COUNT_';
-    JOINED = 'JOINED_';
-    ENTITY_ID = 'ENTITY_ID_';
-    ATTEMPT = 'ATTEMPT_';
-    DETAILS = 'DETAILS_';
+    private USERS = "USR_";
+    private ID = "ID_";
+    private DETAIS = "DTLS_";
 
     constructor(
         @Inject(User.name) private userRepository: BaseRepository<User>,
-        // // private cacheService: CacheService,
+        private cacheService: RedisService
     ) { }
 
-    //DB FUNCTIONS
     async create(data: User) {
         const user = await this.userRepository.create(data);
         return user;
     }
 
     async fetchOne(params: Params<User>) {
-        if (params.searchParams?._id) {
-            //delete project so anyone can't set projected data in cache for details
-            delete params.project;
-            const dbData = await this.userRepository.fetchOne(params);
-            return dbData;
+        const key = this.getKeyForUserDetails(params);
+        console.log('key: ', key);
+        if (key) {
+            const cacheData = await this.getUserDetailsInCache(key);
+            console.log('cacheData: ', Boolean(cacheData));
+            if (cacheData) return cacheData;
+            else {
+                if (params.searchParams?._id) {
+                    delete params.project;
+                    const dbData = await this.userRepository.fetchOne(params);
+                    console.log('dbData: ', dbData);
+                    this.setUserDetailsInCache(key, dbData);
+                    return dbData;
+                }
+            }
         }
         return await this.userRepository.fetchOne(params);
     }
 
     async list(params: Params<User>) {
-        //get user list by _id, ids
         if (params.searchParams._id) return await this.listByIds(params);
         return await this.userRepository.list(params);
     }
@@ -82,5 +85,35 @@ export class UserRepository {
     ) {
         const dbData = await this.userRepository.updateMany(searchParams, data);
         return dbData;
+    }
+
+    // ==============================> Redis keys <======================================== //
+    getKeyForUserDetails(params: Params<User>) {
+        if (params) {
+            if (params.searchParams._id) {
+                return this.USERS + this.DETAIS + this.ID + params.searchParams._id;
+            }
+        }
+        return false;
+    }
+
+    // ==============================> Redis functions <=================================== //
+    async setUserDetailsInCache(key: string, data: User) {
+        if (key.length) {
+            await this.cacheService.set(key, data); // Await the promise returned by `set`
+        }
+    }
+
+    async getUserDetailsInCache(key: string): Promise<User | null> {
+        if (key.length) {
+            return await this.cacheService.get(key); // Await the promise returned by `get`
+        }
+        return null;
+    }
+
+    async deleteUserDetailsInCache(key: string) {
+        if (key.length) {
+            await this.cacheService.deleteByPattern(key); // Await the promise returned by `deleteByPattern`
+        }
     }
 }

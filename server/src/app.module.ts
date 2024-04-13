@@ -10,6 +10,7 @@ import { SessionsModule } from './modules/schedule/schedule.module';
 import * as cors from 'cors';
 import { LoggerModule } from 'nestjs-pino';
 import { UsersModule } from './modules/users/users.module';
+import { RedisService } from './common/utils/redis/redis.service';
 
 @Module({
   imports: [

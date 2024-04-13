@@ -4,9 +4,13 @@ import { User, UserSchema } from './users.schema';
 import { UserService } from './users.service';
 import { UserRepository } from './users.repository';
 import { UsersController } from './users.controller';
+import { UsersMapper } from './users.mapper';
+import { RedisService } from 'src/common/utils/redis/redis.service';
+import { CoreModule } from '../core/core.module';
 
 @Module({
     imports: [
+        CoreModule,
         RepositoryModule.forFeature([
             {
               name: User.name,
@@ -15,7 +19,8 @@ import { UsersController } from './users.controller';
         ]),
     ],
     controllers: [UsersController],
-    providers: [UserService, UserRepository],
+    providers: [UserService, UserRepository, UsersMapper, RedisService],
+    exports: [UsersMapper, RedisService]
 })
 export class UsersModule {
 }
