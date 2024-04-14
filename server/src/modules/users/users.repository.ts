@@ -94,7 +94,7 @@ export class UserRepository {
                 return this.USERS + this.DETAIS + this.ID + params.searchParams._id;
             }
         }
-        return false;
+        return "";
     }
 
     // ==============================> Redis functions <=================================== //
