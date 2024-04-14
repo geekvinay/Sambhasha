@@ -1,273 +1,55 @@
-import {
-    FilterQuery,
-    Model,
-    PipelineStage,
-    UpdateQuery,
-    QueryOptions
-  } from 'mongoose';
-  import { InjectModel } from '@nestjs/mongoose';
-  import { HttpException, HttpStatus } from '@nestjs/common';
-  import { BaseRepository } from './types/base-repo.interface';
-  import { Document } from './types/document.interface';
-  import { Params } from './types/params.interface';
-  import { PpLoggerService } from 'src/common/logger/logger.service';
-  import { ApmSpan } from '../decorators/apm.decorator';
-  import { CacheService } from '../cache/cache.service';
-  
-  interface Provider {
-    provide: string;
-    useClass: any;
-  }
-  
-  const defaultParams = {
-    isLean: true,
-  };
-  
-  /**Repository provider for given schema name*/
-  function getProvider(name: string): Provider {
-    class Repository<T> implements BaseRepository<T> {
-      constructor(
-        @InjectModel(name)
-        public model: Model<Document<T>>,
-        private logger: PpLoggerService,
-        private cacheService: CacheService
-      ) {
-        this.logger.setContext(`BaseRepository-${this.model.modelName}`);
-      }
-      
-      @ApmSpan()
-      async count(searchParams: FilterQuery<Document<T>>) {
-        try {
-          const count = await this.model.count(searchParams);
-          return count;
-        } catch (err) {
-          this.logger.error(err);
-          throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async fetchOne(params: Params<T>, hashKey?: string, key?: string) {
-        try {
-          if(hashKey && key && params?.searchParams?._id){
-            const detailsKey = key + params.searchParams._id;
-            const cacheData = await this.cacheService.hGet(hashKey, detailsKey);
-            if(cacheData) {
-              return cacheData;
-            } else {
-              params = { ...defaultParams, ...params };
-  
-              const entity = this.generateSearchQueryForFetchOne(params);
-              const doc = await entity.exec();
-              doc && this.cacheService.hSet(hashKey, detailsKey, doc);
-              return doc;
+import AgoraRTC from 'agora-rtc-sdk-ng';
+import { useEffect, useRef } from 'react';
+import ChatPanel from './ChatPanel';
+import SocketSerivce from '../services/socket';
+
+const StudentPanel = ({socket}: {socket: SocketSerivce}) => {
+    const APP_ID = 'ce247b150c49484b9a4e5ef856e94390';
+    const TOKEN = "007eJxTYOjQPMLF+I9xeoxqtftpkRDzx1EprRxu7Syr70w9ZLC8oUuBITnVyMQ8ydDUINnE0sTCJMky0STVNDXNwtQs1dLE2NLAvvVjakMgI4P8axUGRigE8SUYzEzTDM1TTFOTUiwMjI1STRLNzUyNTc3NGBgA9r0heA==";
+    const CHANNEL = '65f17d5ebd8032e4a7653576';
+    const teacherVideoRef: any = useRef();
+    const client = AgoraRTC.createClient({
+        mode: 'rtc',
+        codec: 'vp8',
+    });
+    useEffect(() => {
+        const joinChannel = async () => {
+            try {
+                await client.join(APP_ID, CHANNEL, TOKEN, null);
+                const microphoneTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                await client.publish([microphoneTrack]);
+
+                client.on("user-published", (user, mediaType) => {
+                    console.log('user, mediaType: ', user, mediaType);
+                    if (mediaType == 'video') {
+                        console.log('user.hasVideo: ', user.hasVideo);
+                        console.log('user.videoTrack: ', user.videoTrack);
+                    }
+                });
+            } catch (error) {
+                console.error('Error joining channel:', error);
             }
-          } else {
-            params = { ...defaultParams, ...params };
-  
-            const entity = this.generateSearchQueryForFetchOne(params);
-            const doc = await entity.exec();
-            return doc;
-          }
-        } catch (err) {
-          this.logger.error(err);
-          throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async list(params: Params<T>) {
-        try {
-          params = { ...defaultParams, ...params };
-          const entity = this.generateSearchQueryForFetch(params);
-          const docs = await entity.exec();
-          return docs || [];
-        } catch (err) {
-          this.logger.error(err);
-          throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async distinct(key: string, params: Params<T>) {
-        try {
-          params = { ...defaultParams, ...params };
-          const data = await this.model.distinct(key, params);
-          return data || [];
-        } catch (err) {
-          this.logger.error(err);
-          throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async create(data: T) {
-        try {
-          const entity = new this.model(data);
-          const doc = await entity.save();
-  
-          return doc;
-        } catch (error) {
-          this.logger.error(error);
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async createMany(dataList: T[]) {
-        try {
-          const result = await this.model.insertMany(dataList);
-          return result;
-        } catch (error) {
-          this.logger.error(error);
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async findOneAndUpdate(
-        searchParams: FilterQuery<Document<T>>,
-        data: UpdateQuery<Document<T>>,
-        options?: QueryOptions,
-        hashKey?: string, 
-        key?: string
-      ) {
-        try {
-          const doc = await this.model.findOneAndUpdate(searchParams, data, {
-            new: true,
-            ...options,
-          }); //returns new document
-  
-          if(hashKey && key){
-            const detailsKey = key + doc._id;
-            this.cacheService.hDel(hashKey, detailsKey);
-          }
-          return doc;
-        } catch (error) {
-          this.logger.error(error);
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async updateMany(
-        searchParams: FilterQuery<Document<T>>,
-        data: UpdateQuery<Document<T>>,
-        options: QueryOptions = {},
-      ) {
-        try {
-          const result = await this.model.updateMany(searchParams, data, options);
-          return result;
-        } catch (error) {
-          this.logger.error(error);
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async deleteOne(searchParams: FilterQuery<Document<T>>) {
-        try {
-          const result = await this.model.deleteOne(searchParams);
-          return result;
-        } catch (error) {
-          this.logger.error(error);
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      @ApmSpan()
-      async deleteMany(searchParams: FilterQuery<Document<T>>) {
-        try {
-          const result = await this.model.deleteMany(searchParams);
-          return result;
-        } catch (error) {
-          this.logger.error(error);
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
-  
-      private generateSearchQueryForFetchOne(params: Params<T>) {
-        let entity = this.model.findOne(params.searchParams || {});
-  
-        if (params.project) {
-          entity = this.model.findOne(
-            params.searchParams || {},
-            params.project || {},
-          );
-        }
-        if (params.populate) {
-          entity.populate(params.populate);
-        }
-        // if (params.deepPopulate) {
-        //   entity.deepPopulate(params.deepPopulate);
-        // }
-        if (params.sort) {
-          entity.sort(params.sort);
-        }
-        if (params.isLean) {
-          entity.lean();
-        }
-        return entity;
-      }
-  
-      private generateSearchQueryForFetch(params: Params<T>) {
-        let entity = this.model.find(params.searchParams || {});
-  
-        if (params.project) {
-          entity = this.model.find(
-            params.searchParams || {},
-            params.project || {},
-          );
-        }
-        if (params.populate) {
-          entity.populate(params.populate);
-        }
-        // if (params.deepPopulate) {
-        //   entity.deepPopulate(params.deepPopulate);
-        // }
-        if (params.sort) {
-          entity.sort(params.sort);
-        }
-  
-        const page = params.page;
-        const limit = params.limit;
-        if (page && limit && page > 0) {
-          params.skip = (page - 1) * limit;
-        }
-  
-        if (params.skip) {
-          entity.skip(params.skip);
-        }
-        if (params.limit) {
-          entity.limit(params.limit);
-        }
-        if (params.isLean) {
-          entity.lean();
-        }
-        return entity;
-      }
-  
-      @ApmSpan()
-      async aggregate(pipeline: PipelineStage[]) {
-        try {
-          const result = await this.model.aggregate(pipeline);
-          return result;
-        } catch (error) {
-          this.logger.error(error);
-          throw error;
-        }
-      }
-  
-    }
-  
-    return {
-      provide: name,
-      useClass: Repository,
-    };
-  }
-  
-  /**Provides repository for given features*/
-  export function getProviders(features): Provider[] {
-    return features.map(({ name }) => getProvider(name));
-  }
-  
+        };
+
+        joinChannel();
+
+        return () => {
+            // Clean up resources when component unmounts
+            client.leave();
+        };
+    }, []);
+
+    return (
+        <section className='col-span-2 flex flex-col justify-between h-full rounded-md'>
+            <div className='max-h-[25vh] w-full right-4 bg-white p-4 box-border rounded-md'>
+                <video id="video-container" ref={teacherVideoRef} className='z-10 w-full h-full shadow-md bg-slate-300 rounded-md overflow-hidden'>
+                </video>
+            </div>
+            <section className="controls h-[68vh] w-full bg-white rounded-md">
+                <ChatPanel socket={socket}/>
+            </section>
+        </section>
+    );
+};
+
+export default StudentPanel;
