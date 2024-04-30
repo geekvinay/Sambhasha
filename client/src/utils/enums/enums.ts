@@ -8,6 +8,19 @@ export enum penToolTip {
 }
 
 export enum userRoleEnum {
-    STUDENT = "student", 
+    STUDENT = "student",
     TEACHER = "teacher"
+}
+
+export enum PathActionEnum {
+    UNDO = "undo",
+    WRITE = "write",
+    REDO = "redo",
+    DELETE = "delete"
+}
+
+export enum ColorsEnum {
+    BLACK = "#0e0e0e",
+    BLUE = "#002b64",
+    RED = "#bd373a"
 }

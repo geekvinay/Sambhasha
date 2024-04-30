@@ -1,9 +1,12 @@
-import { defineConfig } from 'vite';
-import basicSSL from '@vitejs/plugin-basic-ssl';
+import { defineConfig } from 'vite'
+import Icons from 'unplugin-icons/vite'
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [basicSSL()],
-  server: {
-    https: true,
-  },
-});
+  plugins: [
+    Icons({
+      compiler: 'jsx',
+      jsx: 'react',
+    }),
+  ],
+})

@@ -40,17 +40,18 @@ const TeacherVideo = () => {
             }
         };
 
-        joinChannel();
+        // joinChannel();
 
         return () => {
         };
     }, []);
 
     return (
-        <div id="video-parent" className='z-10 absolute bottom-4 right-4 shadow-md bg-slate-300 w-[16rem] h-[9rem] rounded-md overflow-hidden'>
-            <div id="video-container" ref={videoContainer} className='z-10 right-4 shadow-md bg-slate-300 w-[16rem] h-[9rem] rounded-md overflow-hidden'>
-            </div>
-        </div>
+        // <div id="video-parent" className='z-10 absolute bottom-4 right-4 shadow-md bg-slate-300 w-[16rem] h-[9rem] rounded-md overflow-hidden'>
+        //     <div id="video-container" ref={videoContainer} className='z-10 right-4 shadow-md bg-slate-300 w-[16rem] h-[9rem] rounded-md overflow-hidden'>
+        //     </div>
+        // </div>
+        <></>
     );
 };
 
