@@ -1,12 +1,11 @@
-import SocketSerivce from "../../services/socket";
+import SocketService from "../../services/socket";
 import Whiteboard from "./Whiteboard/Whiteboard";
 
-const TeacherBoard = ({ socketService }: { socketService: SocketSerivce; }) => {
-    console.log('socketService: ', socketService);
+const TeacherBoard = ({ socket }: { socket: SocketService; }) => {
 
     return (
         <section className="TeacherBoard col-span-5">
-            <Whiteboard />
+            <Whiteboard socket={socket} />
         </section>
     );
 };

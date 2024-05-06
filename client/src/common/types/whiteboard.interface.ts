@@ -1,4 +1,4 @@
-import { PathActionEnum } from "../../utils/enums/enums";
+import { PathActionEnum, penToolTip } from "../../utils/enums/enums";
 
 export interface slideObject {
     seq: number;
@@ -8,9 +8,8 @@ export interface slideObject {
 export interface pathObj {
     seq?: number;
     path: any;
+    pen: penToolTip,
     originalCanvasWidth: number | undefined,
     originalCanvasHeight: number | undefined,
-    left: number,
-    top: number,
     action: PathActionEnum;
 }

@@ -1,7 +1,8 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useContext } from "react";
 import { fabric } from "fabric";
 import { Icon } from '@iconify/react';
-import { ColorsEnum } from "../../../utils/enums/enums";
+import { ColorsEnum, PathActionEnum, penToolTip, whiteboardEvent } from "../../../utils/enums/enums";
+const background = "../../../../public/back.svg";
 
 // Icons from iconify
 import MdiUndo from '@iconify-icons/mdi/undo';
@@ -12,19 +13,44 @@ import MdiLeadPencil from '@iconify-icons/mdi/lead-pencil';
 import MdiDotsHorizontalCircleOutline from '@iconify-icons/mdi/dots-horizontal-circle-outline';
 import MdiMenuLeft from '@iconify-icons/mdi/menu-left';
 import MdiMenuRight from '@iconify-icons/mdi/menu-right';
-import MdiContentSave from '@iconify-icons/mdi/content-save'
-import MdiShieldSync from '@iconify-icons/mdi/shield-sync'
+import MdiContentSave from '@iconify-icons/mdi/content-save';
+import MdiShieldSync from '@iconify-icons/mdi/shield-sync';
+import MdiBrush from '@iconify-icons/mdi/brush';
+import SocketService from "../../../services/socket";
 
-const Whiteboard = () => {
+const Whiteboard = ({ socket }: { socket: SocketService; }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasPar = useRef<HTMLCanvasElement>(null);
-    const [paths, setPaths] = useState<any[]>([]);
-    let canvas: fabric.Canvas;
+    const [paths, setPaths] = useState<fabric.Object[]>([]);
+    const [removedPaths, setRemovedPaths] = useState<fabric.Object[]>([]);
+    const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+    const [brushColor, setBrushColor] = useState<string>(ColorsEnum.BLACK);
+    const [showGrid, setShowGrid] = useState<boolean>(false);
+    const [pen, setPen] = useState({
+        penType: penToolTip.PEN,
+    });
+
+    useEffect(() => {
+        if (canvas) {
+            if (pen.penType == penToolTip.PEN) {
+                canvas.freeDrawingBrush = new fabric.BaseBrush();
+            }
+            else if (pen.penType == penToolTip.PENCIL) {
+            }
+            else if (pen.penType == penToolTip.BRUSH) {
+            }
+            else if (pen.penType == penToolTip.ERASER) {
+            }
+            else {
+            }
+            canvas.freeDrawingBrush.color = "#0e0e0e";
+        }
+    }, [pen]);
 
     useEffect(() => {
         if (!canvasPar.current || !canvasRef.current) return;
 
-        canvas = new fabric.Canvas(canvasRef.current, {
+        const newCanvas = new fabric.Canvas(canvasRef.current, {
             backgroundColor: 'white',
             enableRetinaScaling: true,
             selection: true,
@@ -34,47 +60,95 @@ const Whiteboard = () => {
             width: canvasPar.current.clientWidth,
         });
 
-        canvas.on('object:added', (event: any) => {
-            console.log('event: ', event);
-            setPaths(prevPaths => [...prevPaths, event.target.path]);
+        newCanvas.on('object:added', (event: any) => {
+            setPaths(prevPaths => [...prevPaths, event.target]);
+            console.log('socketService 1234: ', socket);
+            socket?.sendWhiteboardPathToRoom({
+                pen: pen.penType,
+                path: event.target,
+                action: PathActionEnum.WRITE,
+                canvasHeight: canvasRef.current?.clientHeight,
+                canvasWidth: canvasRef.current?.clientWidth,
+            });
         });
-        canvas.freeDrawingBrush.width = 3;
+
+
+        newCanvas.on('object:removed', (event: any) => {
+            setRemovedPaths(prevPaths => [...prevPaths, event.target]);
+        });
+
+        newCanvas.freeDrawingBrush.width = 3;
+        newCanvas.freeDrawingBrush.color = brushColor;
+        setCanvas(newCanvas);
 
         return () => {
-            if (canvas) {
-                canvas.off('path:created');
-            }
+            newCanvas.dispose();
         };
     }, []);
 
-    useEffect(() => {
-        console.log('paths: ', paths);
-    }, [paths]);
-
     const handleColorSelection = (color: string) => {
-        console.log('color: ', color);
+        setBrushColor(color);
         if (canvas) {
             canvas.freeDrawingBrush.color = color;
+            // setPen({...pen, color: color});
         }
     };
 
     const undoPath = () => {
-        console.log('undoPath-paths: ', paths);
         if (paths.length > 0 && canvas) {
             const lastPath = paths[paths.length - 1];
             console.log('lastPath: ', lastPath);
-            console.log('canvas: ', canvas);
             canvas.remove(lastPath);
+            socket.sendWhiteboardEventToRoom({
+                event: whiteboardEvent.UNDO
+            });
             setPaths(prevPaths => prevPaths.slice(0, -1));
         }
     };
 
     const redoPath = () => {
-        // Logic to redo
+        if (removedPaths.length > 0 && canvas) {
+            const lastRemovedPath = removedPaths[removedPaths.length - 1];
+            canvas.add(lastRemovedPath);
+            socket.sendWhiteboardEventToRoom({
+                event: whiteboardEvent.REDO
+            });
+            setRemovedPaths(prevPaths => prevPaths.slice(0, -1)); 
+            setPaths(prevPaths => [...prevPaths, lastRemovedPath]);
+        }
     };
 
+    const saveCanvasToImage = () => {
+        if (canvas) {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL({ format: 'png' });
+            link.download = 'canvas.png';
+            link.click();
+            link.remove();
+        }
+    };
+
+    useEffect(() => {
+        if (showGrid) {
+            if (canvas) {
+                fabric.Image.fromURL(background, () => {
+                    const pattern = new fabric.Pattern({
+                        source: background,
+                        repeat: 'repeat',
+                    });
+                    canvas.setBackgroundColor(pattern, canvas.renderAll.bind(canvas));
+                });
+            }
+        }
+        else {
+            if (canvas) {
+                canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas));
+            }
+        }
+    }, [showGrid]);
+
     return (
-        <section ref={canvasPar} className="relative bg-green-200 rounded-md h-full w-full">
+        <section ref={canvasPar} className="relative bg-white rounded-md h-full w-full">
             <canvas ref={canvasRef} className='rounded-md' />
             <section className="BottomControls absolute min-h-[3rem] ml-10 rounded-xl bottom-10 p-2 bg-slate-200 flex">
                 <div className="bg-white mr-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => undoPath()}>
@@ -88,20 +162,20 @@ const Whiteboard = () => {
                 <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => undoPath()}>
                     <Icon icon={MdiUndo} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer">
+                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => redoPath()}>
                     <Icon icon={MdiRedo} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer">
+                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => setShowGrid(grid => !grid)}>
                     <Icon icon={MdiGridLarge} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer">
+                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.PEN }); }}>
                     <Icon icon={MdiPen} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer">
-                    <Icon icon={MdiPen} className="text-gray-500 text-2xl" />
-                </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer">
+                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.PENCIL }); }}>
                     <Icon icon={MdiLeadPencil} className="text-gray-500 text-2xl" />
+                </div>
+                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.PENCIL }); }}>
+                    <Icon icon={MdiBrush} className="text-gray-500 text-2xl" />
                 </div>
                 <div className="p-2 rounded-xl bg-white hover:shadow-sm mx-2 flex items-center space-x-2">
                     <button className="w-5 h-5 rounded-full bg-black" onClick={() => handleColorSelection(ColorsEnum.BLACK)}></button>
@@ -113,10 +187,10 @@ const Whiteboard = () => {
                 </div>
             </section>
             <section className="BottomControls absolute min-h-[3rem] right-10 rounded-xl bottom-10 p-2 bg-slate-200 flex">
-                <div className="bg-white hover:shadow-sm rounded-xl p-1 mr-2 cursor-pointer" onClick={() => undoPath()}>
+                <div className="bg-white hover:shadow-sm rounded-xl p-1 mr-2 cursor-pointer" onClick={() => saveCanvasToImage()}>
                     <Icon icon={MdiContentSave} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="bg-white hover:shadow-sm rounded-xl p-1 cursor-pointer" onClick={() => undoPath()}>
+                <div className="bg-white hover:shadow-sm rounded-xl p-1 cursor-pointer" >
                     <Icon icon={MdiShieldSync} className="text-gray-500 text-2xl" />
                 </div>
             </section>

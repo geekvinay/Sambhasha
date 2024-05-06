@@ -45,9 +45,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('sendWhiteboard')
-  handleWhiteboardEvent(client: Socket, payload: { room: string; pathObj: any; }) {
+  handleWhiteboardPath(client: Socket, payload: { room: string; pathObj: any; }) {
     console.log('payload: ', JSON.stringify(payload));
     this.server.to(payload.room).emit('receive_whiteboard_path', payload.pathObj);
+  }
+  
+  @SubscribeMessage('sendWhiteboardEvent')
+  handleWhiteboardEvent(client: Socket, payload: { room: string; data: any; }) {
+    console.log('payload: ', JSON.stringify(payload));
+    this.server.to(payload.room).emit('receive_whiteboard_event', payload.data);
   }
 
   @SubscribeMessage('sendInbox')
@@ -55,4 +61,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('payload: ', payload);
     client.to(payload.room).emit('receive_inbox_mess', payload.mess);
   }
+
+  @SubscribeMessage('broadcastMessage')
+  handleBroadcastMessage(client: Socket, payload: { message: any; }) {
+    this.server.emit('receive_broadcast_message', payload.message);
+  }
+
 }
+
