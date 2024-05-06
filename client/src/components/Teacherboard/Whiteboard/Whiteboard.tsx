@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useContext } from "react";
+import { useRef, useEffect, useState } from "react";
 import { fabric } from "fabric";
 import { Icon } from '@iconify/react';
 import { ColorsEnum, PathActionEnum, penToolTip, whiteboardEvent } from "../../../utils/enums/enums";
@@ -142,7 +142,7 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
         }
         else {
             if (canvas) {
-                canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas));
+                canvas.setBackgroundImage("", canvas.renderAll.bind(canvas));
             }
         }
     }, [showGrid]);

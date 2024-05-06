@@ -66,6 +66,5 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleBroadcastMessage(client: Socket, payload: { message: any; }) {
     this.server.emit('receive_broadcast_message', payload.message);
   }
-
 }
 

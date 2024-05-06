@@ -7,7 +7,7 @@ const ChatPanel = ({ socket }: { socket: SocketSerivce; }) => {
         text: 'Welcome to the class!!!!'
     }]);
     const [inputValue, setInputValue]: any = useState('');
-    socket.socket.on("receive_inbox_mess", (payload: any) => {
+    socket.on("receive_inbox_mess", (payload: any) => {
         console.log('messages: ', messages);
         setMessages([...messages, { user: 'other', text: payload.mess }]);
     });
@@ -19,7 +19,7 @@ const ChatPanel = ({ socket }: { socket: SocketSerivce; }) => {
             setInputValue('');
         }
 
-        socket.sendInboxMess({
+        socket.sendInboxMessageToRoom({
             mess: inputValue,
         });
     };
