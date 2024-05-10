@@ -14,7 +14,6 @@ const VideoPanel = ({ isTeacher = true }) => {
   const peers = useHMSStore(selectPeers);
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(false);
-  const [showGrid, setShowGrid] = useState(false);
 
   useEffect(() => {
     const handleJoin = async () => {

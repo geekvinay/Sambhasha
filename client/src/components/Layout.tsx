@@ -5,7 +5,6 @@ import 'normalize.css';
 import Student from "../pages/Student";
 import Welcome from "../pages/Welcome";
 import SocketService from "../services/socket";
-import VideoPanel from "./Teacherboard/VideoPanel/VideoPanel copy";
 import ClassCreate from "../pages/ClassCreate";
 const socketService = new SocketService();
 
@@ -26,8 +25,6 @@ const Layout = () => {
         return <Teacher socket={socket} />;
     } else if (presentPath.pathname.includes("student")) {
         return <Student socket={socket} />;
-    } else if (presentPath.pathname.includes("video")) {
-        return <VideoPanel />;
     }
     else if (presentPath.pathname.includes("create-class")) {
         return <ClassCreate />;
