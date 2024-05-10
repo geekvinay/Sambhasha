@@ -4,7 +4,7 @@ import Whiteboard from "./Whiteboard/Whiteboard";
 const TeacherBoard = ({ socket }: { socket: SocketService; }) => {
 
     return (
-        <section className="TeacherBoard col-span-5">
+        <section className="TeacherBoard col-span-8">
             <Whiteboard socket={socket} />
         </section>
     );

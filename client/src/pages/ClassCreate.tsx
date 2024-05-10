@@ -1,19 +1,15 @@
 import { useState } from "react";
-import { userRoleEnum } from "../utils/enums/enums";
 import { useNavigate } from "react-router-dom";
 import classImage from "../assets/background.webp";
 import logoImage from "../assets/logo-1.jpg";
 
-const Welcome = () => {
-    const [userRole, setUserRole] = useState(userRoleEnum.STUDENT);
+const ClassCreate = () => {
     const [inputs, setInputs] = useState({
         username: "",
-        classId: "",
+        className: "",
+        classDescription: "",
     });
     const navigate = useNavigate();
-    const handleRoleChange = (e: any) => {
-        setUserRole(e.target.value);
-    };
 
     const handleInputChange = (e: any) => {
         const { name, value } = e.target;
@@ -26,13 +22,9 @@ const Welcome = () => {
     const handleFormSubmit = (e: any) => {
         e.preventDefault();
 
-        localStorage.setItem('session-details', JSON.stringify(inputs));
-        if (userRole === userRoleEnum.TEACHER) {
-            localStorage.setItem('classId', inputs.classId);
-            navigate(`/teacher`);
-        } else {
-            navigate(`/student`);
-        }
+        console.log('inputs: ', inputs);
+        localStorage.setItem('username', inputs.username);
+        navigate(`/teacher`);
     };
 
     return (
@@ -42,30 +34,22 @@ const Welcome = () => {
             </section>
             <section className="left-section w-full h-full flex flex-col items-center justify-center">
                 <section className="logoImage w-[70%] h-[20%] bg-white rounded-xl my-8 overflow-hidden">
-                    <img src={logoImage} alt="" className="h-full w-full object-cover"/>
+                    <img src={logoImage} alt="" className="h-full w-full object-cover" />
                 </section>
                 <section className="formWrapper min-w-[70%] py-[4rem] px-[4rem] rounded-xl bg-white flex flex-col justify-center">
                     <form action="/" className="relative flex flex-col items-start" onSubmit={handleFormSubmit}>
-                        <label htmlFor="username" className="absolute transform -translate-y-[120%] text-slate-700 mb-2 text-2xl font-bold">Welcome to the class!</label>
-                        <select id="role" value={userRole} className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleRoleChange}>
-                            <option value={userRoleEnum.TEACHER}>Teacher</option>
-                            <option value={userRoleEnum.STUDENT}>Student</option>
-                        </select>
+                        <label htmlFor="username" className="absolute transform -translate-y-[120%] text-slate-700 mb-2 text-2xl font-bold">Create a class!</label>
                         <input type="text" name="username" id="username" placeholder="Username" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
-                        <input type="text" name="classId" id="classId" placeholder="Class ID" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
+                        <input type="text" name="className" id="className" placeholder="Class Name" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
+                        <input type="text" name="classDescription" id="classDescription" placeholder="Class Description" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
                         <button type="submit" name="submit" id="submit" className="px-4 py-2 my-2 bg-blue-500 text-white font-medium w-[25vw] shadow-sm rounded-md">
                             Submit
                         </button>
                     </form>
-                    {userRole === userRoleEnum.TEACHER && (
-                    <p className="text-blue-500 cursor-pointer underline" onClick={() => navigate(`/create-class`)}>
-                        Click here to create new class!!
-                    </p>
-                )}
                 </section>
             </section>
         </section>
     );
 };
 
-export default Welcome;
+export default ClassCreate;

@@ -13,4 +13,8 @@ export default () => ({
   socket: {
     url: process.env.SOCKET_URL,
   },
+  sdk100ms: {
+    templateId: process.env.RTC_TEMPLATE_ID || "61d7dd43a91c277a22ba8655",
+    managementToken: process.env.RTC_MANAGEMENT_TOKEN,
+  },
 });
