@@ -10,7 +10,7 @@ const VideoPanel = ({ isTeacher = true }) => {
   const hmsActions = useHMSActions();
   const { isLocalAudioEnabled, isLocalVideoEnabled, toggleAudio, toggleVideo } = useAVToggle();
   const sessionDetails = JSON.parse(localStorage.getItem("session-details") || "{}");
-  const { userName, roomCode } = sessionDetails;
+  const { userName="Vinay Kishore", roomCode="pdz-ieeq-jma" } = sessionDetails;
   const peers = useHMSStore(selectPeers);
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(false);
@@ -60,6 +60,7 @@ const VideoPanel = ({ isTeacher = true }) => {
             ref={videoRef}
             className="local-video rounded-md"
             autoPlay
+            muted
             playsInline
           />
         )}

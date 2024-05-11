@@ -1,12 +1,14 @@
-import { selectPeers, useHMSActions, useHMSStore, useVideo } from "@100mslive/react-sdk";
 import { useEffect, useState } from "react";
+import { selectPeers, useHMSActions, useHMSStore, useVideo } from "@100mslive/react-sdk";
 
 const VideoPanel = ({ isTeacher = true }) => {
   const hmsActions = useHMSActions();
   const sessionDetails = JSON.parse(localStorage.getItem("session-details") || "{}");
-  const { userName, roomCode } = sessionDetails;
+  const { userName = "Student 12345", roomCode = "pdz-ieeq-jma" } = sessionDetails;
   const peers = useHMSStore(selectPeers);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Ref to store the video element
 
   useEffect(() => {
     const handleJoin = async () => {
@@ -31,9 +33,9 @@ const VideoPanel = ({ isTeacher = true }) => {
   }, [hmsActions, roomCode, userName, isTeacher]);
 
   const teacherPeer = peers.find(peer => peer.roleName === 'teacher' && !peer.isLocal);
-  const { videoRef } = useVideo({
-    trackId: teacherPeer?.videoTrack
-  });
+  const { videoRef } = useVideo({ trackId: teacherPeer?.videoTrack });
+
+  console.log('teacherPeer: ', teacherPeer);
 
   return (
     <section className="VideoPanel relative">
