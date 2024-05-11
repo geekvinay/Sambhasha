@@ -52,6 +52,7 @@ const VideoPanel = ({ isTeacher = true }) => {
           <video
             ref={videoRef}
             className="video rounded-md"
+            muted
             autoPlay
             playsInline
           />
