@@ -10,11 +10,12 @@ import { SessionService } from './schedule.service';
 @Controller("/session")
 export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
-  @Get("/:scheduleId")
+  @Get("/:uniqueCode")
   getSchedule(
-    @Param() params: string
+    @Param() params: any
   ): any {
-    return this.sessionService.getSchedule(params);
+    console.log('uniqueCode: ', params.uniqueCode);
+    return this.sessionService.getSchedule(params.uniqueCode);
   }
 
   @Post("/")

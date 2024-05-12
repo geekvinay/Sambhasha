@@ -6,9 +6,12 @@ import Student from "../pages/Student";
 import Welcome from "../pages/Welcome";
 import SocketService from "../services/socket";
 import ClassCreate from "../pages/ClassCreate";
-const socketService = new SocketService();
 
 const Layout = () => {
+    const roomDetails = JSON.parse(localStorage.getItem("session-details") || "");
+    const roomCode = roomDetails ? roomDetails.code : "open-class";
+    console.log('roomCode: ', roomCode);
+    const socketService = new SocketService(roomCode);
     const presentPath = useLocation();
     const [path, setPath] = useState({});
     const [socket, setSocket] = useState<SocketService>(socketService);

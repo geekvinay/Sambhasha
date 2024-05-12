@@ -2,9 +2,9 @@ import SocketService from "../../../services/socket";
 import VideoPanel from "../VideoPanel/VideoPanel";
 
 const StudentSidePanel = ({ socket }: { socket: SocketService; }) => {
-  console.log('socket: ', socket.connect);
+  console.log('socket: ', socket.socket?.id);
   return (
-    <section className="StudentSidePanel bg-white col-span-2 rounded-md p-2 flex flex-col justify-start">
+    <section className="StudentSidePanel col-span-2 rounded-md flex flex-col justify-start">
       <VideoPanel isTeacher={false}/>
     </section>
   );

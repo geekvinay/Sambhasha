@@ -1,64 +1,78 @@
-import { Injectable, Post } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ScheduleRepository } from './schedule.repository';
 import { Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
-const agora = require('agora-access-token');
-const axios = require('axios');
+import axios from 'axios';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class SessionService {
-    private sdk100ms = this.configService.get("sdk100ms");
-
+    private sdk100msConfig;
     constructor(
-        private scheduleRepository: ScheduleRepository,
         private configService: ConfigService,
+        private scheduleRepository: ScheduleRepository,
     ) {
-        console.log('templateId: ', this.sdk100ms.templateId);
-        console.log('managementToken: ', this.sdk100ms.managementToken);
+        this.sdk100msConfig = this.configService.get("sdk100ms");
+        console.log('templateId: ', this.sdk100msConfig.templateId);
+        console.log('managementToken: ', this.sdk100msConfig.managementToken);
     }
 
-
     getHello(): string {
-        return 'Hello Worlds!';
+        return 'Hello World!';
     }
 
     async createSchedule(body: any) {
-        const res = await this.scheduleRepository.create(body);
-        const roomDetails = await this.createRoom({ roomName: body.name, description: body.description });
-        console.log('roomDetails: ', roomDetails);
-        const roomCodes = await this.getRoomCodes(roomDetails);
-        console.log('roomCodes: ', roomCodes);
-        console.log('res: ', res);
-        return { ...res, roomCodes };
+        try {
+            let dbData = await this.scheduleRepository.create(body);
+
+            // Append roomDetails on to scheduleObject
+            const roomDetails = await this.createRoom({ roomName: body.name, description: body.description });
+
+            // Append roomCodes on to roomCodes
+            const roomCodes = await this.getRoomCodes(roomDetails.id);
+            const roomCodesMapped = roomCodes.data.map((data) => {
+                return {
+                    code: data.code,
+                    role: data.role,
+                };
+            });
+            const uniqueCode = this.generateRandomScheduleCode();
+            return await this.scheduleRepository.findOneAndUpdate({ _id: dbData._id }, { roomCodes: roomCodesMapped, uniqueCode: uniqueCode });
+        } catch (error) {
+            console.error('Error creating schedule:', error);
+            return null;
+        }
     }
 
-    async getSchedule(params: any) {
-        console.log('body: ', params);
-        const res = await this.scheduleRepository.fetchOne({
-            searchParams: {
-                _id: new Types.ObjectId(params.scheduleId)
-            }
-        });
-        console.log('res: ', res);
-        return res;
+    async getSchedule(uniqueCode: string) {
+        try {
+            const dbData = await this.scheduleRepository.fetchOne({
+                searchParams: {
+                    uniqueCode: uniqueCode
+                }
+            });
+            return dbData;
+        } catch (error) {
+            console.error('Error fetching schedule:', error);
+            return null;
+        }
     }
-
-
 
     createRoom = async ({ roomName = "Room Name", description = "Room Description" }) => {
         try {
-            const response = await axios.post('https://api.100ms.live/v2/rooms', {
+            const body = {
                 name: roomName,
                 description: description,
-                template_id: this.sdk100ms.templateId,
+                template_id: this.sdk100msConfig.templateId,
                 region: 'us'
-            }, {
+            };
+            const headerConfig = {
                 headers: {
-                    'Authorization': `Bearer ${this.sdk100ms.managementToken}`,
+                    'Authorization': `Bearer ${this.sdk100msConfig.managementToken}`,
                     'Content-Type': 'application/json'
                 }
-            });
-            console.log('response.data: ', response.data);
+            };
+            const response = await axios.post('https://api.100ms.live/v2/rooms', body, headerConfig);
             return response.data;
         } catch (error) {
             console.error('Error creating room:', error);
@@ -66,19 +80,25 @@ export class SessionService {
         }
     };
 
-    getRoomCodes = async (roomDetails) => {
+    getRoomCodes = async (roomId: string) => {
         try {
-            const response = await axios.post('https://api.100ms.live/v2/room-codes/room/' + roomDetails.id, {}, {
+            const headers = {
                 headers: {
-                    'Authorization': `Bearer ${this.sdk100ms.managementToken}`,
+                    'Authorization': `Bearer ${this.sdk100msConfig.managementToken}`,
                     'Content-Type': 'application/json'
                 }
-            });
-            console.log('response.data: ', response.data);
+            };
+            const response = await axios.post(`https://api.100ms.live/v2/room-codes/room/${roomId}`, {}, headers);
             return response.data;
         } catch (error) {
-            console.error('Error creating room:', error);
+            console.error('Error getting room codes:', error.message);
             return null;
         }
     };
+
+    // Function to generate a random 4-digit number
+    generateRandomScheduleCode(): string {
+        const code = randomBytes(3).toString('hex').toUpperCase(); // Generate 2 random bytes (4 hexadecimal characters)
+        return code;
+    }
 }

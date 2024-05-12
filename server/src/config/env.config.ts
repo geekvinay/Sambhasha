@@ -14,7 +14,7 @@ export default () => ({
     url: process.env.SOCKET_URL,
   },
   sdk100ms: {
-    templateId: process.env.RTC_TEMPLATE_ID || "61d7dd43a91c277a22ba8655",
+    templateId: process.env.RTC_TEMPLATE_ID || "663a246d5afd7e4281e31430",
     managementToken: process.env.RTC_MANAGEMENT_TOKEN,
   },
 });

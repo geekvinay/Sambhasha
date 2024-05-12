@@ -1,5 +1,5 @@
 import { Socket, io } from "socket.io-client";
-const url = import.meta.env.VITE_SERVICE_URL as string;
+const url = import.meta.env.VITE_SOCKET_SERVICE_URL as string;
 
 class SocketService {
   public socket: Socket | null;

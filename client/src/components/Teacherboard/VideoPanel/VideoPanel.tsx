@@ -12,7 +12,9 @@ const VideoPanel = ({ isTeacher = true }) => {
   const hmsActions = useHMSActions();
   const { isLocalAudioEnabled, isLocalVideoEnabled, toggleAudio, toggleVideo } = useAVToggle();
   const sessionDetails = JSON.parse(localStorage.getItem("session-details") || "{}");
-  const { userName = "Vinay Kishore", roomCode = "pdz-ieeq-jma" } = sessionDetails;
+  let { userName, roomCode } = sessionDetails;
+  userName = userName || "TEACHER 1234";
+  roomCode = roomCode || "ryh-eogu-rau";
   const peers = useHMSStore(selectPeers);
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(true);

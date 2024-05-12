@@ -11,7 +11,9 @@ import placeholderImage from "../../../assets/user-placeholder.png";
 const VideoPanel = ({ isTeacher = true }) => {
   const hmsActions = useHMSActions();
   const sessionDetails = JSON.parse(localStorage.getItem("session-details") || "{}");
-  const { userName = "Student 12345", roomCode = "uoo-vets-nbt" } = sessionDetails;
+  let { userName, roomCode} = sessionDetails;
+  userName = userName || "A VINAY KISHORE";
+  roomCode = roomCode || "ycd-mdix-jts";
   const peers = useHMSStore(selectPeers);
   const [isLoading, setIsLoading] = useState(true);
   const [isAudioMuted, setIsAudioMuted] = useState(true);
@@ -51,10 +53,10 @@ const VideoPanel = ({ isTeacher = true }) => {
   };
 
   return (
-    <section className="VideoPanel relative ">
+    <section className="VideoPanel relative bg-white p-2 rounded-md">
       <div className="video-wrapper relative h-full w-full">
         <div
-          className="local-video-container flex justify-start w-full h-[25vh] rounded-md relative"
+          className="local-video-container flex justify-start w-full h-[25vh] rounded-md relative box-border"
           style={{ backgroundImage: `url(${placeholderImage})`, backgroundSize: "cover" }}
           onMouseEnter={() => setShowControls(true)}
           onMouseLeave={() => setShowControls(false)}
@@ -99,8 +101,8 @@ const VideoPanel = ({ isTeacher = true }) => {
             </div>
           )}
         </div>
-        <div className="video-title relative w-full p-2 font-medium z-10 flex">
-          {teacherPeer && <span className="text-md font-bold px-2 text-sky-700">TEACHER</span>}
+        <div className="video-title relative w-full px-2 pt-2 font-medium z-10 flex">
+          <span className="text-md font-bold pr-2 text-sky-700">TEACHER</span>
           {teacherPeer && teacherPeer.name}
         </div>
       </div>

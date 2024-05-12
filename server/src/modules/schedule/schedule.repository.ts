@@ -23,8 +23,7 @@ export class ScheduleRepository {
 
     //DB FUNCTIONS
     async create(data: Schedule) {
-        const schedule = await this.scheduleRepository.create(data);
-        return schedule;
+        return await this.scheduleRepository.create(data);
     }
 
     async fetchOne(params: Params<Schedule>) {

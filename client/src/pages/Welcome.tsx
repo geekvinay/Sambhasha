@@ -8,7 +8,7 @@ const Welcome = () => {
     const [userRole, setUserRole] = useState(userRoleEnum.STUDENT);
     const [inputs, setInputs] = useState({
         username: "",
-        classId: "",
+        classCode: "",
     });
     const navigate = useNavigate();
     const handleRoleChange = (e: any) => {
@@ -23,12 +23,10 @@ const Welcome = () => {
         }));
     };
 
-    const handleFormSubmit = (e: any) => {
-        e.preventDefault();
-
-        localStorage.setItem('session-details', JSON.stringify(inputs));
+    const handleFormSubmit = (event:  any) => {
+        event.preventDefault();
+        localStorage.setItem("session-details", JSON.stringify(inputs));
         if (userRole === userRoleEnum.TEACHER) {
-            localStorage.setItem('classId', inputs.classId);
             navigate(`/teacher`);
         } else {
             navigate(`/student`);
@@ -42,7 +40,7 @@ const Welcome = () => {
             </section>
             <section className="left-section w-full h-full flex flex-col items-center justify-center">
                 <section className="logoImage w-[70%] h-[20%] bg-white rounded-xl my-8 overflow-hidden">
-                    <img src={logoImage} alt="" className="h-full w-full object-cover"/>
+                    <img src={logoImage} alt="" className="h-full w-full object-cover" />
                 </section>
                 <section className="formWrapper min-w-[70%] py-[4rem] px-[4rem] rounded-xl bg-white flex flex-col justify-center">
                     <form action="/" className="relative flex flex-col items-start" onSubmit={handleFormSubmit}>
@@ -52,16 +50,16 @@ const Welcome = () => {
                             <option value={userRoleEnum.STUDENT}>Student</option>
                         </select>
                         <input type="text" name="username" id="username" placeholder="Username" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
-                        <input type="text" name="classId" id="classId" placeholder="Class ID" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
+                        <input type="text" name="classCode" id="classCode" placeholder="Class ID" className="px-4 py-2 my-2 w-[25vw] bg-gray-200 shadow-sm rounded-md" onChange={handleInputChange} />
                         <button type="submit" name="submit" id="submit" className="px-4 py-2 my-2 bg-blue-500 text-white font-medium w-[25vw] shadow-sm rounded-md">
                             Submit
                         </button>
                     </form>
                     {userRole === userRoleEnum.TEACHER && (
-                    <p className="text-blue-500 cursor-pointer underline" onClick={() => navigate(`/create-class`)}>
-                        Click here to create new class!!
-                    </p>
-                )}
+                        <p className="text-blue-500 cursor-pointer underline" onClick={() => navigate(`/create-class`)}>
+                            Click here to create new class!!
+                        </p>
+                    )}
                 </section>
             </section>
         </section>
