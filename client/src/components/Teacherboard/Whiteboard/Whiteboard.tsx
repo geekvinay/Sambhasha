@@ -1,7 +1,11 @@
 import { useRef, useEffect, useState } from "react";
 import { fabric } from "fabric";
+import Tesseract from "tesseract.js";
 import { Icon } from '@iconify/react';
 import { ColorsEnum, PathActionEnum, penToolTip, whiteboardEvent } from "../../../utils/enums/enums";
+import SocketService from "../../../services/socket";
+// import { PageMetaData, SlidesMetaData } from "../../../common/types/whiteboard.interface";
+
 const background = "../../../../public/back.svg";
 
 // Icons from iconify
@@ -16,7 +20,6 @@ import MdiMenuRight from '@iconify-icons/mdi/menu-right';
 import MdiContentSave from '@iconify-icons/mdi/content-save';
 import MdiShieldSync from '@iconify-icons/mdi/shield-sync';
 import MdiBrush from '@iconify-icons/mdi/brush';
-import SocketService from "../../../services/socket";
 
 const Whiteboard = ({ socket }: { socket: SocketService; }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,30 +29,24 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
     const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
     const [brushColor, setBrushColor] = useState<string>(ColorsEnum.BLACK);
     const [showGrid, setShowGrid] = useState<boolean>(false);
-    const [pen, setPen] = useState({
-        penType: penToolTip.PEN,
-    });
+    const [pen, setPen] = useState({ penType: penToolTip.PEN, });
 
     useEffect(() => {
         if (canvas) {
             if (pen.penType == penToolTip.PEN) {
                 canvas.freeDrawingBrush = new fabric.BaseBrush();
-            }
-            else if (pen.penType == penToolTip.PENCIL) {
-            }
-            else if (pen.penType == penToolTip.BRUSH) {
-            }
-            else if (pen.penType == penToolTip.ERASER) {
-            }
-            else {
+            } else if (pen.penType == penToolTip.PENCIL) {
+            } else if (pen.penType == penToolTip.BRUSH) {
+            } else if (pen.penType == penToolTip.ERASER) {
+            } else {
             }
             canvas.freeDrawingBrush.color = "#0e0e0e";
         }
     }, [pen]);
 
     useEffect(() => {
+        // Run after the component is mounted
         if (!canvasPar.current || !canvasRef.current) return;
-
         const newCanvas = new fabric.Canvas(canvasRef.current, {
             backgroundColor: 'white',
             enableRetinaScaling: true,
@@ -60,8 +57,10 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
             width: canvasPar.current.clientWidth,
         });
 
+        // Object added event listener and handler
         newCanvas.on('object:added', (event: any) => {
             setPaths(prevPaths => [...prevPaths, event.target]);
+            performOCR(event.target);
             console.log('socketService 1234: ', socket);
             socket?.sendWhiteboardPathToRoom({
                 pen: pen.penType,
@@ -72,7 +71,7 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
             });
         });
 
-
+        // Object Removed Event listener and handler
         newCanvas.on('object:removed', (event: any) => {
             setRemovedPaths(prevPaths => [...prevPaths, event.target]);
         });
@@ -99,9 +98,7 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
             const lastPath = paths[paths.length - 1];
             console.log('lastPath: ', lastPath);
             canvas.remove(lastPath);
-            socket.sendWhiteboardEventToRoom({
-                event: whiteboardEvent.UNDO
-            });
+            socket.sendWhiteboardEventToRoom({ event: whiteboardEvent.UNDO });
             setPaths(prevPaths => prevPaths.slice(0, -1));
         }
     };
@@ -110,10 +107,8 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
         if (removedPaths.length > 0 && canvas) {
             const lastRemovedPath = removedPaths[removedPaths.length - 1];
             canvas.add(lastRemovedPath);
-            socket.sendWhiteboardEventToRoom({
-                event: whiteboardEvent.REDO
-            });
-            setRemovedPaths(prevPaths => prevPaths.slice(0, -1)); 
+            socket.sendWhiteboardEventToRoom({ event: whiteboardEvent.REDO });
+            setRemovedPaths(prevPaths => prevPaths.slice(0, -1));
             setPaths(prevPaths => [...prevPaths, lastRemovedPath]);
         }
     };
@@ -139,13 +134,58 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
                     canvas.setBackgroundColor(pattern, canvas.renderAll.bind(canvas));
                 });
             }
-        }
-        else {
+        } else {
             if (canvas) {
                 canvas.setBackgroundImage("", canvas.renderAll.bind(canvas));
             }
         }
     }, [showGrid]);
+
+    const performOCR = async (lastPath: fabric.Path) => {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.getContext('2d');
+        tempCanvas.width = canvasRef.current?.clientHeight || 100;
+        tempCanvas.height = canvasRef.current?.clientWidth || 100;
+        const tempFabricCanvas = new fabric.Canvas(tempCanvas, {
+            height: canvasRef.current?.clientHeight,
+            width: canvasRef.current?.clientWidth
+        });
+        tempFabricCanvas.add(lastPath);
+        tempFabricCanvas.renderAll();
+
+        // Convert the canvas to an image data URL
+        const imageDataURL = tempCanvas.toDataURL();
+        console.log('imageDataURL: ', imageDataURL);
+
+        Tesseract.recognize(imageDataURL, 'eng', {
+            logger: m => console.log(m)
+        })
+        .then(({ data: { text } }) => {
+            console.log("Recognized Text:", text);
+            replacePathWithText(text);
+        })
+        .catch(error => {
+            console.error("Error performing OCR:", error);
+        });
+    };
+
+    const replacePathWithText = (text: string) => {
+        if (canvas && paths.length > 0) {
+            const lastPath = paths[paths.length - 1];
+            const textObject = new fabric.Textbox(text, {
+                left: lastPath.left,
+                top: (lastPath.top || 10) + (lastPath.height || 10) + 10,
+                width: lastPath.width,
+                fontSize: 14,
+                fontFamily: 'Arial',
+                fill: 'black',
+                editable: false,
+            });
+            canvas.remove(lastPath);
+            canvas.add(textObject);
+            setPaths(prevPaths => prevPaths.slice(0, -1));
+        }
+    };
 
     return (
         <section ref={canvasPar} className="relative bg-white rounded-md h-full w-full">
@@ -174,7 +214,7 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
                 <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.PENCIL }); }}>
                     <Icon icon={MdiLeadPencil} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.PENCIL }); }}>
+                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.BRUSH }); }}>
                     <Icon icon={MdiBrush} className="text-gray-500 text-2xl" />
                 </div>
                 <div className="p-2 rounded-xl bg-white hover:shadow-sm mx-2 flex items-center space-x-2">

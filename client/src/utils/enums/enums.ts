@@ -29,3 +29,9 @@ export enum ColorsEnum {
     BLUE = "#3B82F6",
     RED = "#bd373a"
 }
+
+export enum ControlPanelStateEnum {
+    CHAT = "Chat",
+    POLLS = "Polls",
+    PEOPLE = "People"
+}

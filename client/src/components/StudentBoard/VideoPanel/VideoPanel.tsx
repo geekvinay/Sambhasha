@@ -6,7 +6,7 @@ import MdiVideoOff from '@iconify-icons/mdi/video-off';
 import MdiVideoOn from '@iconify-icons/mdi/video';
 import MdiLoading from '@iconify-icons/mdi/loading';
 import { Icon } from "@iconify/react/dist/iconify.js";
-import placeholderImage from "../../../assets/user-placeholder.png";
+import placeholderImage from "../../../assets/user.png";
 
 const VideoPanel = ({ isTeacher = true }) => {
   const hmsActions = useHMSActions();
@@ -28,6 +28,9 @@ const VideoPanel = ({ isTeacher = true }) => {
           userName: userName,
           authToken,
           rememberDeviceSelection: true,
+          settings: {
+            isAudioMuted: true
+          }
         });
         setIsLoading(false);
         setShowControls(false);

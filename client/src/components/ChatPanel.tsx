@@ -1,36 +1,50 @@
-import { useState } from 'react';
-import SocketSerivce from '../services/socket';
+import { useState, useEffect } from 'react';
+import SocketService from '../services/socket';
 
-const ChatPanel = ({ socket }: { socket: SocketSerivce; }) => {
-    const [messages, setMessages]: any = useState([{
-        user: 'other',
-        text: 'Welcome to the class!!!!'
-    }]);
-    const [inputValue, setInputValue]: any = useState('');
-    socket.on("receive_inbox_mess", (payload: any) => {
-        console.log('messages: ', messages);
-        setMessages([...messages, { user: 'other', text: payload.mess }]);
-    });
+const ChatPanel = ({ socket }: { socket: SocketService; }) => {
+    const [messages, setMessages] = useState([{ user: 'other', mess: 'Welcome to the class!!!!' }]);
+    const [inputValue, setInputValue] = useState('');
 
-    const handleMessageSubmit = (e: any) => {
-        e.preventDefault();
-        if (inputValue.trim() !== '') {
-            setMessages([...messages, { user: 'user', text: inputValue }]);
-            setInputValue('');
+    useEffect(() => {
+        // const localMessList = JSON.parse(localStorage.getItem('session-messages') || "[]");
+        // console.log('localMessList: ', localMessList);
+        // if (localMessList.length) {
+        //     setMessages(localMessList);
+        // }
+        const receiveInboxMess = (payload: any) => {
+            console.log('payload: ', payload);
+            setMessages(prevMessages => [...prevMessages, { user: 'other', mess: payload }]);
+        };
+
+        if (socket.socket) {
+            socket.socket.on("receive_inbox_mess", receiveInboxMess);
+            return () => {
+                socket.socket && socket.socket.off("receive_inbox_mess", receiveInboxMess);
+            };
         }
+    }, []);
 
-        socket.sendInboxMessageToRoom({
-            mess: inputValue,
-        });
+    const handleMessageSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log('inputValue: ', inputValue);
+        if (inputValue.trim() !== '') {
+            setMessages(prevMessages => {
+                const currMessList = [...prevMessages, { user: 'user', mess: inputValue }];
+                localStorage.setItem('session-messages', JSON.stringify(currMessList));
+                return currMessList;
+            });
+            setInputValue('');
+            socket.sendInboxMessageToRoom(inputValue);
+        }
     };
 
     return (
-        <div className="h-full flex flex-col justify-between p-4">
-            <div className="flex flex-col flex-grow bg-gray-200 rounded-md justify-end overflow-y-scroll px-4 pb-4">
-                {messages.map((message: any, index: any) => (
+        <div className="h-full flex flex-col justify-between bg-white">
+            <div className="max-height-full h-full flex flex-col overflow-scroll bg-slate-200 rounded-md justify-end box-border px-2 pb-2" >
+                {messages.map((message: any, index: number) => (
                     <div key={index} className={`message-container flex ${message.user === 'user' ? 'sent justify-end' : 'received justify-start'}`}>
-                        <div className={`message my-2 rounded-md px-4 py-1 w-fit max-w-[80%] ${message.user === 'user' ? 'bg-blue-500 text-white  rounded-br-none' : 'bg-green-600 text-white rounded-bl-none'}`}>
-                            {message.text}
+                        <div className={`message my-2 rounded-md px-4 py-1 max-w-[80%] ${message.user === 'user' ? 'bg-blue-500 text-white rounded-br-none' : 'bg-green-600 text-white rounded-bl-none'}`}>
+                            {message.mess}
                         </div>
                     </div>
                 ))}

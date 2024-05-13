@@ -18,6 +18,7 @@ import { Server, Socket } from 'socket.io';
 )
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
+  private room_id;
 
   handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
@@ -28,9 +29,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(client: Socket, room: string) {
+  handleJoinRoom(client: Socket, { room, userName }: { room: string, userName: string; }) {
     client.join(room);
-    console.log(`Client ${client.id} joined room ${room}`);
+    console.log(`Client ${client.id} - ${userName} joined room ${room}`);
+    this.server.to(this.room_id).emit('receive_user_joined', { userId: client.id, userName: userName });
+    this.room_id = room;
   }
 
   @SubscribeMessage('leaveRoom')
@@ -49,17 +52,29 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('payload: ', JSON.stringify(payload));
     this.server.to(payload.room).emit('receive_whiteboard_path', payload.pathObj);
   }
-  
+
   @SubscribeMessage('sendWhiteboardEvent')
   handleWhiteboardEvent(client: Socket, payload: { room: string; data: any; }) {
     console.log('payload: ', JSON.stringify(payload));
     this.server.to(payload.room).emit('receive_whiteboard_event', payload.data);
   }
 
+  @SubscribeMessage('createPoll')
+  handleCreatePollEvent(client: Socket, payload) {
+    console.log('payload: ', JSON.stringify(payload));
+    this.server.to(this.room_id).emit('receive_create_poll_event', payload);
+  }
+
+  @SubscribeMessage('answerPoll')
+  handleAnswerPollEvent(client: Socket, payload) {
+    console.log('payload: ', JSON.stringify(payload));
+    this.server.to(this.room_id).emit('receive_answer_poll_event', payload);
+  }
+
   @SubscribeMessage('sendInbox')
   handleInboxMess(client: Socket, payload: { room: string; mess: any; }) {
-    console.log('payload: ', payload);
-    client.to(payload.room).emit('receive_inbox_mess', payload.mess);
+    console.log('payload: ', payload.mess);
+    client.to(payload.room || this.room_id).emit('receive_inbox_mess', payload.mess);
   }
 
   @SubscribeMessage('broadcastMessage')

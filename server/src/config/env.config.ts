@@ -11,7 +11,7 @@ export default () => ({
     nodes: process.env.REDIS_NODES ? [process.env.REDIS_NODES] : null,
   },
   socket: {
-    url: process.env.SOCKET_URL,
+    url: process.env.SOCKET_URL || "http://localhost:8001",
   },
   sdk100ms: {
     templateId: process.env.RTC_TEMPLATE_ID || "663a246d5afd7e4281e31430",

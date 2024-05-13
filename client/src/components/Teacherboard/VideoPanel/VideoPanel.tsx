@@ -6,7 +6,7 @@ import MdiMicrophoneOff from '@iconify-icons/mdi/microphone-off';
 import MdiVideoOff from '@iconify-icons/mdi/video-off';
 import MdiVideoOn from '@iconify-icons/mdi/video';
 import MdiLoading from '@iconify-icons/mdi/loading';
-import placeholderImage from "../../../assets/user-placeholder.png";
+import userImage from "../../../assets/user.png";
 
 const VideoPanel = ({ isTeacher = true }) => {
   const hmsActions = useHMSActions();
@@ -48,10 +48,11 @@ const VideoPanel = ({ isTeacher = true }) => {
   });
 
   return (
-    <section className="VideoPanel relative w-full h-[25vh]">
+    <section className="VideoPanel relative w-full h-fit p-4 bg-white rounded-md">
+      <img src={userImage} alt="" className="h-full w-full rounded-md"/>
       <div
-        className="local-video-container w-full h-full flex justify-start rounded-md relative"
-        style={{ backgroundImage: `url(${placeholderImage})`, backgroundSize: "cover" }}
+        className="local-video-containera absolute top-0 left-0 w-full h-full flex justify-start rounded-md"
+        // style={{ backgroundImage: `url(${placeholderImage})`, backgroundSize: "cover" }}
         onMouseEnter={() => setShowControls(true)}
         onMouseLeave={() => setShowControls(false)}
       >

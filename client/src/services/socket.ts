@@ -1,20 +1,22 @@
 import { Socket, io } from "socket.io-client";
-const url = import.meta.env.VITE_SOCKET_SERVICE_URL as string;
+const url = import.meta.env.VITE_SOCKET_SERVICE_URL || import.meta.env.VITE_SERVICE_URL;
 
 class SocketService {
   public socket: Socket | null;
   private roomId: string;
+  private userName: string;
 
   constructor(roomId: string = "class_room") {
     this.socket = null;
     this.roomId = roomId;
+    this.userName = JSON.parse(localStorage.getItem("user-details") || "{}").userName || "Dummy User";
     this.connect(roomId);
   }
 
   connect(roomId: string = "class_room"): void {
     this.socket = io(url);
     this.roomId = roomId;
-    this.socket.emit("joinRoom", roomId);
+    this.socket.emit("joinRoom", { room: roomId, userName: this.userName });
     this.setupSocketListeners();
   }
 
@@ -27,7 +29,6 @@ class SocketService {
 
     this.socket.on("error", (error: any) => {
       console.error("Socket error:", error);
-      // Handle the error as needed
     });
   }
 
@@ -55,6 +56,18 @@ class SocketService {
     this.emit("sendMessage", { room, message });
   }
 
+  sendCreatePoll(data: any, room: string = this.roomId){
+    console.log('room: ', room);
+    console.log('data: ', data);
+    this.socket?.emit("createPoll", data);
+  }
+
+  sendAnswerPoll(data: any, room: string = this.roomId){
+    console.log('room: ', room);
+    console.log('data: ', data);
+    this.socket?.emit("answerPoll", data);
+  }
+
   sendWhiteboardPathToRoom(pathObj: any, room: string = this.roomId): void {
     console.log('pathObj: ', pathObj);
     this.emit("sendWhiteboard", { room, pathObj });
@@ -66,7 +79,8 @@ class SocketService {
   }
 
   sendInboxMessageToRoom(message: any, room: string = this.roomId): void {
-    this.emit("sendInbox", { room, message });
+    console.log('{ room, mess: message }: ', { room, mess: message });
+    this.emit("sendInbox", { room, mess: message });
   }
 }
 
