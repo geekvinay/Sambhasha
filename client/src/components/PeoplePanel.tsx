@@ -1,4 +1,4 @@
-import { useHMSActions, useHMSStore, selectPeers } from "@100mslive/react-sdk";
+import { useHMSStore, selectPeers } from "@100mslive/react-sdk";
 import { Icon } from '@iconify/react';
 import MdiMicrophone from '@iconify-icons/mdi/microphone';
 import MdiMicrophoneOff from '@iconify-icons/mdi/microphone-off';
