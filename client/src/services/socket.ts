@@ -73,6 +73,11 @@ class SocketService {
     this.emit("sendWhiteboard", { room, pathObj });
   }
 
+  sendUnmuteRequest(peerId: string){
+    console.log('peerId: ', peerId);
+    this.emit("askForUnmute", peerId);
+  }
+
   sendWhiteboardEventToRoom(data: any, room: string = this.roomId): void {
     console.log('sendWhiteboardEventToRoom-data: ', data);
     this.emit("sendWhiteboardEvent", { room, data });

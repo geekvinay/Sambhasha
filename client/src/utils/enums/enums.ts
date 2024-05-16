@@ -1,5 +1,6 @@
 export enum penToolTip {
     PEN = "PEN",
+    POINTER = "POINTER",
     PENCIL = "PENCIL",
     BRUSH = "BRUSH",
     ERASER = "ERASER",

@@ -23,7 +23,7 @@ const TeacherPollPanel = ({ socket }: { socket: SocketService; }) => {
     };
 
     useEffect(() => {
-        socket.socket && socket.socket.on('receive_answer_poll_event', (data) => {
+        socket.on('receive_answer_poll_event', (data) => {
             const { option } = data;
             const updatedOptions = [...options];
             updatedOptions[option].votes += 1;

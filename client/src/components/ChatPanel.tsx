@@ -1,28 +1,8 @@
 import { useState, useEffect } from 'react';
 import SocketService from '../services/socket';
 
-const ChatPanel = ({ socket }: { socket: SocketService; }) => {
-    const [messages, setMessages] = useState([{ user: 'other', mess: 'Welcome to the class!!!!' }]);
+const ChatPanel = ({ socket, messages, setMessages }: { socket: SocketService; messages: any, setMessages: React.Dispatch<React.SetStateAction<{ user: string; mess: any; }[]>>; }) => {
     const [inputValue, setInputValue] = useState('');
-
-    useEffect(() => {
-        // const localMessList = JSON.parse(localStorage.getItem('session-messages') || "[]");
-        // console.log('localMessList: ', localMessList);
-        // if (localMessList.length) {
-        //     setMessages(localMessList);
-        // }
-        const receiveInboxMess = (payload: any) => {
-            console.log('payload: ', payload);
-            setMessages(prevMessages => [...prevMessages, { user: 'other', mess: payload }]);
-        };
-
-        if (socket.socket) {
-            socket.socket.on("receive_inbox_mess", receiveInboxMess);
-            return () => {
-                socket.socket && socket.socket.off("receive_inbox_mess", receiveInboxMess);
-            };
-        }
-    }, []);
 
     const handleMessageSubmit = (e: React.FormEvent) => {
         e.preventDefault();

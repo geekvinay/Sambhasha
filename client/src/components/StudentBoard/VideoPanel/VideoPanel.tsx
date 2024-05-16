@@ -1,24 +1,34 @@
 import { useEffect, useState } from "react";
-import { selectPeers, useHMSActions, useHMSStore, useVideo } from "@100mslive/react-sdk";
-import MdiVolumeOff from '@iconify-icons/mdi/volume-off';
-import MdiVolumeHigh from '@iconify-icons/mdi/volume-high';
+import { selectLocalPeer, selectPeers, useAVToggle, useHMSActions, useHMSStore, useVideo } from "@100mslive/react-sdk";
+import MdiMicrophone from '@iconify-icons/mdi/microphone';
+import MdiMicrophoneOff from '@iconify-icons/mdi/microphone-off';
 import MdiVideoOff from '@iconify-icons/mdi/video-off';
 import MdiVideoOn from '@iconify-icons/mdi/video';
 import MdiLoading from '@iconify-icons/mdi/loading';
 import { Icon } from "@iconify/react/dist/iconify.js";
 import placeholderImage from "../../../assets/user.png";
+import SocketService from "../../../services/socket";
 
-const VideoPanel = ({ isTeacher = true }) => {
+const VideoPanel = ({ socket, isTeacher = true }: { socket: SocketService; isTeacher: boolean; }) => {
   const hmsActions = useHMSActions();
   const sessionDetails = JSON.parse(localStorage.getItem("session-details") || "{}");
-  let { userName, roomCode} = sessionDetails;
+  let { userName, roomCode } = sessionDetails;
   userName = userName || "A VINAY KISHORE";
   roomCode = roomCode || "ycd-mdix-jts";
   const peers = useHMSStore(selectPeers);
+  const localPeer = useHMSStore(selectLocalPeer);
   const [isLoading, setIsLoading] = useState(true);
   const [isAudioMuted, setIsAudioMuted] = useState(true);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const { isLocalAudioEnabled, toggleAudio, toggleVideo } = useAVToggle();
+
+  socket.on('receive_unmute_request', (data) => {
+    if (data == localPeer?.id) {
+      console.log("Unmuting the peer!!!! ", localPeer?.name);
+      hmsActions.setLocalAudioEnabled(true);
+    }
+  });
 
   useEffect(() => {
     const handleJoin = async () => {
@@ -29,7 +39,8 @@ const VideoPanel = ({ isTeacher = true }) => {
           authToken,
           rememberDeviceSelection: true,
           settings: {
-            isAudioMuted: true
+            isAudioMuted: false,
+            isVideoMuted: true
           }
         });
         setIsLoading(false);
@@ -44,16 +55,6 @@ const VideoPanel = ({ isTeacher = true }) => {
 
   const teacherPeer = peers.find(peer => peer.roleName === 'teacher' && !peer.isLocal);
   const { videoRef } = useVideo({ trackId: teacherPeer?.videoTrack });
-
-  const toggleAudio = () => {
-    setIsAudioMuted(prevState => !prevState);
-    console.log('isAudioMuted: ', isAudioMuted);
-  };
-
-  const toggleVideo = () => {
-    setIsVideoMuted(prevState => !prevState);
-    console.log('isAudioMuted: ', isVideoMuted);
-  };
 
   return (
     <section className="VideoPanel relative bg-white p-2 rounded-md">
@@ -82,17 +83,19 @@ const VideoPanel = ({ isTeacher = true }) => {
                     <Icon icon={MdiLoading} className="animate-spin text-gray-900 text-4xl" />
                   </div>
                 )}
+                {
+                  !isLoading && (
+                    <div className="p-2 bg-white hover:shadow-sm rounded-xl cursor-pointer" onClick={toggleAudio}>
+                      {isLocalAudioEnabled ? (
+                        <Icon icon={MdiMicrophone} className="text-gray-500 text-2xl" />
+                      ) : (
+                        <Icon icon={MdiMicrophoneOff} className="text-gray-500 text-2xl" />
+                      )}
+                    </div>
+                  )
+                }
                 {!isLoading && (
-                  <div className="p-2 bg-white hover:shadow-sm rounded-xl cursor-pointer" onClick={toggleAudio}>
-                    {isAudioMuted ? (
-                      <Icon icon={MdiVolumeOff} className="text-gray-500 text-2xl" />
-                    ) : (
-                      <Icon icon={MdiVolumeHigh} className="text-gray-500 text-2xl" />
-                    )}
-                  </div>
-                )}
-                {!isLoading && (
-                  <div className="p-2 bg-white hover:shadow-sm rounded-xl cursor-pointer" onClick={toggleVideo}>
+                  <div className="p-2 bg-white hover:shadow-sm rounded-xl cursor-pointer" onClick={() => setIsVideoMuted(prev => !prev)}>
                     {isVideoMuted ? (
                       <Icon icon={MdiVideoOff} className="text-gray-500 text-2xl" />
                     ) : (

@@ -1,31 +1,7 @@
 import { useState, useEffect } from 'react';
 import SocketService from '../../../services/socket';
 
-const StudentPollPanel = ({ socket }: { socket: SocketService; }) => {
-    const [question, setQuestion] = useState('');
-    const [isActive, setIsActive] = useState(false);
-    const [answeredOption, setansweredOption] = useState<any>(null);
-    const [options, setOptions] = useState([
-        { text: '', votes: 0 },
-        { text: '', votes: 0 },
-        { text: '', votes: 0 },
-        { text: '', votes: 0 },
-    ]);
-
-    useEffect(() => {
-        socket.socket && socket.socket.on('receive_create_poll_event', (data) => {
-            setIsActive(true);
-            console.log('data: ', data);
-            const { question, options } = data;
-            setQuestion(question);
-            setOptions(options);
-        });
-
-        return () => {
-            socket.socket && socket.socket.off('receive_create_poll_event');
-        };
-    }, [socket]);
-
+const StudentPollPanel = ({ socket, question, isActive, answeredOption, options, setansweredOption }: { socket: SocketService; question: any; isActive: any; answeredOption: any; options: any; setansweredOption: any; }) => {
     const handleAnswerPoll = (optionIndex: number) => {
         if (answeredOption == null) {
             socket.sendAnswerPoll({ option: optionIndex });
@@ -41,7 +17,7 @@ const StudentPollPanel = ({ socket }: { socket: SocketService; }) => {
             {isActive ?
                 <div className="mb-4">
                     <p className="text-lg font-semibold mb-2 text-center">{question || "No description !!!"}</p>
-                    {options.map((option, index) => (
+                    {options.map((option: any, index: any) => (
                         <div key={index} className="flex items-center mb-4">
                             <button
                                 onClick={() => handleAnswerPoll(index)}

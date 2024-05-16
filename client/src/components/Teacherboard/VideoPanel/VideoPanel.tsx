@@ -42,14 +42,13 @@ const VideoPanel = ({ isTeacher = true }) => {
   }, [hmsActions, roomCode, userName, isTeacher]);
 
   const localPeer = peers.find(peer => peer.isLocal);
-
   const { videoRef } = useVideo({
     trackId: localPeer?.videoTrack,
   });
 
   return (
     <section className="VideoPanel relative w-full h-fit p-4 bg-white rounded-md">
-      <img src={userImage} alt="" className="h-full w-full rounded-md"/>
+      <img src={userImage} alt="" className="h-full w-full rounded-md" />
       <div
         className="local-video-containera absolute top-0 left-0 w-full h-full flex justify-start rounded-md"
         // style={{ backgroundImage: `url(${placeholderImage})`, backgroundSize: "cover" }}
