@@ -1,4 +1,5 @@
 // socket.gateway.ts
+import { ConfigService } from '@nestjs/config';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -7,6 +8,8 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+// const { Configuration, OpenAIApi } = require("openai");
+// import { Configuration, OpenAIApi } from 'openai';
 
 @WebSocketGateway(
   {
@@ -17,9 +20,10 @@ import { Server, Socket } from 'socket.io';
   }
 )
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;
+  private openai;
+  private configuration;
   private room_id;
-
+  @WebSocketServer() server: Server;
   handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
   }
@@ -70,11 +74,32 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('payload: ', JSON.stringify(payload));
     this.server.to(this.room_id).emit('receive_answer_poll_event', payload);
   }
-
   @SubscribeMessage('sendInbox')
-  handleInboxMess(client: Socket, payload: { room: string; mess: any; }) {
-    console.log('payload: ', payload.mess);
-    client.to(payload.room || this.room_id).emit('receive_inbox_mess', payload.mess);
+  async handleInboxMess(client: Socket, payload: { room: string; mess: any; }) {
+    console.log('Received message: ', payload.mess);
+
+    try {
+      // const response = await this.openai.createCompletion({
+      //   model: "text-davinci-003",
+      //   prompt: payload.mess,
+      //   temperature: 0.5,
+      //   max_tokens: 100,
+      // });
+
+      // const aiResponse = response.data.choices[0].text;
+      // console.log('AI Response: ', aiResponse);
+
+      client.to(payload.room || this.room_id).emit('receive_inbox_mess', payload.mess);
+      // client.to(payload.room || this.room_id).emit('receive_inbox_mess', aiResponse);
+    } catch (error) {
+      // console.error('Error generating AI response: ', error);
+      // client.to(payload.room || this.room_id).emit('receive_inbox_mess', 'Error generating AI response');
+    }
+  }
+
+  @SubscribeMessage('askForUnmute')
+  handleAskForUnmute(client: Socket, payload: any) {
+    this.server.emit('receive_unmute_request', payload);
   }
 
   @SubscribeMessage('broadcastMessage')

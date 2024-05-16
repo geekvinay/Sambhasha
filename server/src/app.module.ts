@@ -11,6 +11,7 @@ import * as cors from 'cors';
 import { LoggerModule } from 'nestjs-pino';
 import { UsersModule } from './modules/users/users.module';
 import { RedisService } from './common/utils/redis/redis.service';
+import { OpenaiModule } from './openai/openai.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { RedisService } from './common/utils/redis/redis.service';
       load: [configuration],
     }),
     SessionsModule,
-    UsersModule
+    UsersModule,
+    OpenaiModule
   ],
   controllers: [AppController],
   providers: [AppService, SocketGateway],
