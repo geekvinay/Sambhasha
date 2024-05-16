@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from "react";
 import { fabric } from "fabric";
-import Tesseract from "tesseract.js";
 import { Icon } from '@iconify/react';
 import { ColorsEnum, PathActionEnum, penToolTip, whiteboardEvent } from "../../../utils/enums/enums";
 import SocketService from "../../../services/socket";
@@ -27,6 +26,7 @@ import MdiCropSquare from '@iconify-icons/mdi/crop-square';
 const Whiteboard = ({ socket }: { socket: SocketService; }) => {
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const { amIScreenSharing, screenShareVideoTrackId } = useScreenShare();
+    console.log('screenShareVideoTrackId: ', screenShareVideoTrackId);
     console.log('amIScreenSharing: ', amIScreenSharing);
     const [menuState, setMenuState] = useState(false);
     const hmsActions = useHMSActions();

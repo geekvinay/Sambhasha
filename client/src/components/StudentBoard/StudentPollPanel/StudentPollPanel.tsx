@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import SocketService from '../../../services/socket';
 
 const StudentPollPanel = ({ socket, question, isActive, answeredOption, options, setansweredOption }: { socket: SocketService; question: any; isActive: any; answeredOption: any; options: any; setansweredOption: any; }) => {

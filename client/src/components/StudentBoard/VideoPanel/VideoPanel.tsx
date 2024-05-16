@@ -19,9 +19,11 @@ const VideoPanel = ({ socket, isTeacher = true }: { socket: SocketService; isTea
   const localPeer = useHMSStore(selectLocalPeer);
   const [isLoading, setIsLoading] = useState(true);
   const [isAudioMuted, setIsAudioMuted] = useState(true);
+  console.log('setIsAudioMuted: ', setIsAudioMuted);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const { isLocalAudioEnabled, toggleAudio, toggleVideo } = useAVToggle();
+  console.log('toggleVideo: ', toggleVideo);
 
   socket.on('receive_unmute_request', (data) => {
     if (data == localPeer?.id) {

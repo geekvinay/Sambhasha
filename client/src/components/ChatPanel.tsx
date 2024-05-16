@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import SocketService from '../services/socket';
 
 const ChatPanel = ({ socket, messages, setMessages }: { socket: SocketService; messages: any, setMessages: React.Dispatch<React.SetStateAction<{ user: string; mess: any; }[]>>; }) => {
