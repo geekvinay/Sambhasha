@@ -11,8 +11,6 @@ import MdiUndo from '@iconify-icons/mdi/undo';
 import MdiRedo from '@iconify-icons/mdi/redo';
 import MdiPen from '@iconify-icons/mdi/pen';
 import MdiDotsHorizontalCircleOutline from '@iconify-icons/mdi/dots-horizontal-circle-outline';
-import MdiMenuLeft from '@iconify-icons/mdi/menu-left';
-import MdiMenuRight from '@iconify-icons/mdi/menu-right';
 import MdiContentSave from '@iconify-icons/mdi/content-save';
 import MdiShieldSync from '@iconify-icons/mdi/shield-sync';
 import MdiMonitorShare from '@iconify-icons/mdi/monitor-share';
@@ -38,6 +36,8 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
     const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
     const [brushColor, setBrushColor] = useState<string>(ColorsEnum.BLACK);
     const [showShapesPanel, setshowShapesPanel] = useState<boolean>(false);
+    const [pointerSize, setPointerSize] = useState(5);
+    const [showPointerSize, setShowPointerSize] = useState(false);
     const [pen, setPen] = useState({ penType: penToolTip.PEN, });
 
     useEffect(() => {
@@ -62,7 +62,7 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
             // Set eraser properties
             setEraserProperties(canvas);
         }
-    }, [pen]);
+    }, [pen, pointerSize]);
 
     const handleObjectAdded = (event: any) => {
         setPaths(prevPaths => [...prevPaths, event.target]);
@@ -76,10 +76,21 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
         });
     };
 
+    useEffect(() => {
+        setInterval(() => {
+
+        }, 5000);
+    });
+
     const setBrushProperties = (canvas: fabric.Canvas, color: string) => {
         if (pen.penType === penToolTip.PEN || pen.penType === penToolTip.BRUSH) {
             canvas.freeDrawingBrush.width = 3;
             canvas.freeDrawingBrush.color = color;
+            const calcWidth = pointerSize / 100 * 20;
+            if (canvas) {
+                console.log('calcWidth: ', calcWidth);
+                canvas.freeDrawingBrush.width = calcWidth;
+            }
         }
     };
     const setEraserProperties = (canvas: fabric.Canvas) => {
@@ -87,6 +98,11 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
             canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
             canvas.freeDrawingBrush.color = "#ffffff";
             canvas.freeDrawingBrush.width = 10;
+            const calcWidth = pointerSize / 100 * 20;
+            if (canvas) {
+                console.log('calcWidth: ', calcWidth);
+                canvas.freeDrawingBrush.width = calcWidth;
+            }
         }
     };
 
@@ -283,30 +299,25 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
     return (
         <section ref={canvasPar} className="relative bg-white rounded-md h-full w-full">
             <canvas ref={canvasRef} className='rounded-md' />
-            <section className="BottomControls absolute min-h-[3rem] ml-10 rounded-xl bottom-10 p-2 bg-slate-200 flex">
-                <div className="bg-white mr-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => undoPath()}>
-                    <Icon icon={MdiMenuLeft} className="text-gray-500 text-3xl" />
-                </div>
-                <div className="bg-white hover:shadow-sm rounded-xl cursor-pointer" onClick={() => undoPath()}>
-                    <Icon icon={MdiMenuRight} className="text-gray-500 text-3xl" />
-                </div>
-            </section>
             <section className="ToolBar bg-slate-200 absolute min-h-[3rem] px-[2rem] bottom-8 left-1/2 translate-x-[-50%] shadow-md p-4 rounded-full min-w-[50%] self-center place-self-center flex justify-evenly items-center">
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.POINTER }); }}>
+                <div className={`p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer ${pen.penType === penToolTip.POINTER ? "bg-slate-300" : ""}`} onClick={() => { setPen({ ...pen, penType: penToolTip.POINTER }); }}>
                     <Icon icon={MdiCursorDefault} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.PEN }); }}>
+                <div className={`relative p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer ${pen.penType === penToolTip.PEN ? "bg-slate-300" : ""}`} onClick={() => { pen.penType === penToolTip.PEN ? setShowPointerSize(prev => !prev) : " "; setPen({ ...pen, penType: penToolTip.PEN }); }}>
+                    <article className={`absolute top-0 translate-y-[-160%] translate-x-[-50%] rounded-lg right-[-10rem] min-h-[2rem] min-w-[5rem] bg-slate-200 menu-item flex justify-start p-4 list-none transition-opacity duration-150 ${showPointerSize ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                        <input type="range" value={pointerSize} onChange={(e) => setPointerSize(parseInt(e.target.value))} />
+                    </article>
                     <Icon icon={MdiPen} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => { setPen({ ...pen, penType: penToolTip.ERASER }); }}>
+                <div className={`p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer ${pen.penType === penToolTip.ERASER ? "bg-slate-300" : ""}`} onClick={() => { pen.penType === penToolTip.ERASER ? setShowPointerSize(prev => !prev) : " "; setPen({ ...pen, penType: penToolTip.ERASER }); }}>
                     <Icon icon={MdiEraser} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="relative p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => setshowShapesPanel(curr_state => !curr_state)}>
+                <div className="relative p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => setshowShapesPanel(curr_state => !curr_state)}>
                     <article className={`absolute top-0 translate-y-[-140%] translate-x-[50%] rounded-lg right-0 min-h-[2rem] min-w-[5rem] bg-slate-200 menu-item flex justify-start p-4 list-none transition-opacity duration-150 ${showShapesPanel ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                        <button className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => addShape('rectangle')}>
+                        <button className="p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => addShape('rectangle')}>
                             <Icon icon={MdiCropSquare} className="text-gray-500 text-xl" />
                         </button>
-                        <button className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => addShape('circle')}>
+                        <button className="p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => addShape('circle')}>
                             <Icon icon={MdiCheckboxBlankCircleOutline} className="text-gray-500 text-xl" />
                         </button>
                     </article>
@@ -317,10 +328,10 @@ const Whiteboard = ({ socket }: { socket: SocketService; }) => {
                     <button className="w-5 h-5 rounded-full bg-blue-500" onClick={() => handleColorSelection(ColorsEnum.BLUE)}></button>
                     <button className="w-5 h-5 rounded-full bg-red-500" onClick={() => handleColorSelection(ColorsEnum.RED)}></button>
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => undoPath()}>
+                <div className="p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => undoPath()}>
                     <Icon icon={MdiUndo} className="text-gray-500 text-2xl" />
                 </div>
-                <div className="p-2 bg-white mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => redoPath()}>
+                <div className="p-2 bg-white hover:bg-slate-100 mx-2 hover:shadow-sm rounded-xl cursor-pointer" onClick={() => redoPath()}>
                     <Icon icon={MdiRedo} className="text-gray-500 text-2xl" />
                 </div>
                 <div className="pl-2 rounded-xl cursor-pointer">
